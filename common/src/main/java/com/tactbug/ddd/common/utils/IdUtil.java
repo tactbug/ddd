@@ -31,15 +31,39 @@ public class IdUtil {
     private Integer warningSize = 20000;
     private Integer perQuantity = 50000;
 
-    public static final ConcurrentHashMap<Class<? extends BaseAggregate>, PriorityBlockingQueue<Long>> ID_MAP = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Class<? extends BaseAggregate>, PriorityBlockingQueue<Long>> ID_MAP = new ConcurrentHashMap<>();
 
     private static final HttpClient HTTP_CLIENT = HttpClient.newHttpClient();
     private static final String URL = "http://192.168.1.200:10001/id";
 
-    public static IdUtil generate(
+    private static final ConcurrentHashMap<Class<? extends BaseAggregate>, IdUtil> UTIL_MAP = new ConcurrentHashMap<>();
+
+    public static IdUtil getOrGenerate(
             String application, Class<? extends BaseAggregate> aggregate, Integer maxSize, Integer warningSize, Integer perQuantity
     ){
-        IdUtil idUtil = new IdUtil();
+        if (UTIL_MAP.containsKey(aggregate)){
+            return UTIL_MAP.get(aggregate);
+        }else {
+            return getAndUpdate(application, aggregate, maxSize, warningSize, perQuantity);
+        }
+    }
+
+    public static IdUtil getAndUpdate(
+            String application, Class<? extends BaseAggregate> aggregate, Integer maxSize, Integer warningSize, Integer perQuantity
+    ){
+        IdUtil idUtil = UTIL_MAP.getOrDefault(aggregate, new IdUtil());
+        assemble(idUtil, application, aggregate, maxSize, warningSize, perQuantity);
+        UTIL_MAP.put(aggregate, idUtil);
+        return idUtil;
+    }
+
+    public Long getId(){
+        PriorityBlockingQueue<Long> idQueue = ID_MAP.getOrDefault(aggregate, new PriorityBlockingQueue<>(maxSize));
+        ID_MAP.putIfAbsent(aggregate, idQueue);
+        return generateId(idQueue);
+    }
+
+    private static void assemble(IdUtil idUtil, String application, Class<? extends BaseAggregate> aggregate, Integer maxSize, Integer warningSize, Integer perQuantity){
         if (Objects.nonNull(maxSize)){
             idUtil.maxSize = maxSize;
         }
@@ -52,13 +76,6 @@ public class IdUtil {
         idUtil.application = application;
         idUtil.aggregate = aggregate;
         idUtil.check();
-        return idUtil;
-    }
-
-    public Long getId(){
-        PriorityBlockingQueue<Long> idQueue = ID_MAP.getOrDefault(aggregate, new PriorityBlockingQueue<>(maxSize));
-        ID_MAP.putIfAbsent(aggregate, idQueue);
-        return generateId(idQueue);
     }
 
     private void check(){
