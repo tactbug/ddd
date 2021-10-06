@@ -26,20 +26,20 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class IdUtil {
 
     private String application;
-    private Class<? extends BaseAggregate> aggregate;
+    private Class<?> aggregate;
     private Integer maxSize = 150000;
     private Integer warningSize = 20000;
     private Integer perQuantity = 50000;
 
-    private static final ConcurrentHashMap<Class<? extends BaseAggregate>, PriorityBlockingQueue<Long>> ID_MAP = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Class<?>, PriorityBlockingQueue<Long>> ID_MAP = new ConcurrentHashMap<>();
 
     private static final HttpClient HTTP_CLIENT = HttpClient.newHttpClient();
     private static final String URL = "http://192.168.1.200:10001/id";
 
-    private static final ConcurrentHashMap<Class<? extends BaseAggregate>, IdUtil> UTIL_MAP = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Class<?>, IdUtil> UTIL_MAP = new ConcurrentHashMap<>();
 
     public static IdUtil getOrGenerate(
-            String application, Class<? extends BaseAggregate> aggregate, Integer maxSize, Integer warningSize, Integer perQuantity
+            String application, Class<?> aggregate, Integer maxSize, Integer warningSize, Integer perQuantity
     ){
         if (UTIL_MAP.containsKey(aggregate)){
             return UTIL_MAP.get(aggregate);
@@ -49,7 +49,7 @@ public class IdUtil {
     }
 
     public static IdUtil getAndUpdate(
-            String application, Class<? extends BaseAggregate> aggregate, Integer maxSize, Integer warningSize, Integer perQuantity
+            String application, Class<?> aggregate, Integer maxSize, Integer warningSize, Integer perQuantity
     ){
         IdUtil idUtil = UTIL_MAP.getOrDefault(aggregate, new IdUtil());
         assemble(idUtil, application, aggregate, maxSize, warningSize, perQuantity);
@@ -63,7 +63,7 @@ public class IdUtil {
         return generateId(idQueue);
     }
 
-    private static void assemble(IdUtil idUtil, String application, Class<? extends BaseAggregate> aggregate, Integer maxSize, Integer warningSize, Integer perQuantity){
+    private static void assemble(IdUtil idUtil, String application, Class<?> aggregate, Integer maxSize, Integer warningSize, Integer perQuantity){
         if (Objects.nonNull(maxSize)){
             idUtil.maxSize = maxSize;
         }

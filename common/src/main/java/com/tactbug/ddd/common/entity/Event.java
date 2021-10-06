@@ -18,7 +18,7 @@ public abstract class Event<T extends BaseAggregate> extends BaseAggregate{
     protected Long operator;
     protected String data;
 
-    protected Event(Long id, T t, EventType eventType, Long operator) throws JsonProcessingException {
+    protected Event(Long id, T t, EventType eventType, Long operator) {
         super(id);
         this.aggregateId = t.getId();
         this.aggregateType = t.getClass();
@@ -29,12 +29,18 @@ public abstract class Event<T extends BaseAggregate> extends BaseAggregate{
         check();
     }
 
-    public abstract void assembleData(T t) throws JsonProcessingException;
+    public abstract void assembleData(T t);
 
 
-    public void check(){
+    public void check() {
         super.check();
         checkNull();
+    }
+
+    @Override
+    public int compareTo(BaseAggregate o) {
+        Event<? extends BaseAggregate> other = (Event<? extends BaseAggregate>) o;
+        return this.getVersion() - other.getVersion();
     }
 
     private void checkNull(){
@@ -53,5 +59,29 @@ public abstract class Event<T extends BaseAggregate> extends BaseAggregate{
         if (Objects.isNull(operator)){
             throw new IllegalArgumentException("操作人员不能为空");
         }
+    }
+
+    public Long getAggregateId() {
+        return aggregateId;
+    }
+
+    public Class<? extends BaseAggregate> getAggregateType() {
+        return aggregateType;
+    }
+
+    public Integer getAggregateVersion() {
+        return aggregateVersion;
+    }
+
+    public EventType getEventType() {
+        return eventType;
+    }
+
+    public Long getOperator() {
+        return operator;
+    }
+
+    public String getData() {
+        return data;
     }
 }

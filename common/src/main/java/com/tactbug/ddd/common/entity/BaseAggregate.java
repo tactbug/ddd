@@ -1,5 +1,7 @@
 package com.tactbug.ddd.common.entity;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+
 import java.time.ZonedDateTime;
 import java.util.Objects;
 
@@ -15,6 +17,11 @@ public class BaseAggregate implements Comparable<BaseAggregate>{
     private boolean changed;
     private ZonedDateTime createTime;
     private ZonedDateTime updateTime;
+
+    protected BaseAggregate(){
+        this.version = 1;
+        this.changed = false;
+    }
 
     protected BaseAggregate(Long id){
         this.id = id;
@@ -33,7 +40,7 @@ public class BaseAggregate implements Comparable<BaseAggregate>{
         return changed;
     }
 
-    public void check(){
+    public void check() {
         if (Objects.isNull(id)){
             throw new IllegalArgumentException("主键不能为空");
         }
@@ -49,6 +56,18 @@ public class BaseAggregate implements Comparable<BaseAggregate>{
         if (updateTime.isBefore(createTime)){
             throw new IllegalArgumentException("更新时间不能早于创建时间");
         }
+    }
+
+    public void replay(Event<? extends BaseAggregate> event) {
+        this.id = event.getAggregateId();
+        this.version = event.getVersion();
+        this.changed = false;
+        this.createTime = event.getCreateTime();
+        this.updateTime = event.getCreateTime();
+    }
+
+    public boolean empty(){
+        return Objects.isNull(id);
     }
 
     @Override
@@ -77,4 +96,5 @@ public class BaseAggregate implements Comparable<BaseAggregate>{
     public ZonedDateTime getUpdateTime() {
         return updateTime;
     }
+
 }

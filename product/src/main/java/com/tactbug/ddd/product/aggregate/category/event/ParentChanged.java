@@ -13,17 +13,17 @@ import java.util.Map;
 /**
  * @Author tactbug
  * @Email tactbug@Gmail.com
- * @Time 2021/10/3 21:41
+ * @Time 2021/10/5 17:20
  */
-public class RemarkUpdated extends Event<Category> {
-    public RemarkUpdated(Long id, Category category, EventType eventType, Long operator) {
+public class ParentChanged extends Event<Category> {
+    public ParentChanged(Long id, Category category, EventType eventType, Long operator) {
         super(id, category, eventType, operator);
     }
 
     @Override
     public void assembleData(Category category){
         Map<String, Object> map = new HashMap<>();
-        map.put("remark", category.getRemark());
+        map.put("parentId", category.getParentId());
         try {
             this.data = SerializeUtil.mapToString(map);
         } catch (JsonProcessingException e) {
