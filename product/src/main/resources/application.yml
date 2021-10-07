@@ -1,2 +1,5 @@
 server:
   port: 11001
+spring:
+  webflux:
+    base-path: product

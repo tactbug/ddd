@@ -7,6 +7,7 @@ import com.tactbug.ddd.common.entity.EventType;
 import com.tactbug.ddd.common.utils.SerializeUtil;
 import com.tactbug.ddd.product.aggregate.category.Category;
 import com.tactbug.ddd.product.assist.exception.TactProductException;
+import org.springframework.data.relational.core.mapping.Table;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -57,7 +58,7 @@ public class CategoryCreated extends Event<Category> {
         if (Objects.isNull(data.get("remark"))){
             data.put("remark", "");
         }
-        if (Objects.isNull(data.get("parentId")) || !(data.get("parentId") instanceof Long)){
+        if (Objects.isNull(data.get("parentId")) || !SerializeUtil.isNumber(data.get("parentId").toString())){
             throw new IllegalStateException("商品分类溯源事件[" + getId() + "]聚合父分类ID状态异常");
         }
     }

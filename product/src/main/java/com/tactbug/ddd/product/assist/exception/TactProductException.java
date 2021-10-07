@@ -16,7 +16,7 @@ public class TactProductException extends RuntimeException{
         return new TactProductException("json解析异常", jacksonException.getMessage());
     }
 
-    public static TactProductException resourceNotExists(String message){
+    public static TactProductException resourceOperateError(String message){
         return new TactProductException("资源操作异常", message);
     }
 }

@@ -2,10 +2,10 @@ package com.tactbug.ddd.product.assist.config;
 
 import io.r2dbc.spi.ConnectionFactories;
 import io.r2dbc.spi.ConnectionFactory;
-import io.r2dbc.spi.ConnectionFactoryOptions;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.r2dbc.config.AbstractR2dbcConfiguration;
+import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,7 +26,7 @@ public class PostgreConnectionConfigurer extends AbstractR2dbcConfiguration {
     public ConnectionFactory connectionFactory() {
         Map<String, String> options = new HashMap<>();
         options.put("lock_timeout", "10s");
-        options.put("statement_timeout", "5m");
+        options.put("statement_timeout", "300s");
         return ConnectionFactories.get(builder()
                 .option(DRIVER, "postgresql")
                 .option(HOST, "192.168.1.200")
@@ -36,5 +36,10 @@ public class PostgreConnectionConfigurer extends AbstractR2dbcConfiguration {
                 .option(DATABASE, "postgres")
                 .option(OPTIONS, options)
                 .build());
+    }
+
+    @Bean
+    public R2dbcEntityTemplate r2dbcEntityTemplate(){
+        return new R2dbcEntityTemplate(connectionFactory());
     }
 }

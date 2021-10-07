@@ -1,7 +1,5 @@
 package com.tactbug.ddd.common.entity;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-
 import java.time.ZonedDateTime;
 import java.util.Objects;
 
@@ -12,14 +10,14 @@ import java.util.Objects;
  */
 public class BaseAggregate implements Comparable<BaseAggregate>{
 
-    private Long id;
-    private Integer version;
-    private boolean changed;
-    private ZonedDateTime createTime;
-    private ZonedDateTime updateTime;
+    protected Long id;
+    protected Integer version;
+    protected boolean changed;
+    protected ZonedDateTime createTime;
+    protected ZonedDateTime updateTime;
 
     protected BaseAggregate(){
-        this.version = 1;
+        this.version = 0;
         this.changed = false;
     }
 
@@ -33,11 +31,8 @@ public class BaseAggregate implements Comparable<BaseAggregate>{
 
     public void update(){
         this.changed = true;
+        this.version += 1;
         this.updateTime = ZonedDateTime.now();
-    }
-
-    public boolean isChanged(){
-        return changed;
     }
 
     public void check() {
@@ -59,15 +54,14 @@ public class BaseAggregate implements Comparable<BaseAggregate>{
     }
 
     public void replay(Event<? extends BaseAggregate> event) {
-        this.id = event.getAggregateId();
-        this.version = event.getVersion();
-        this.changed = false;
-        this.createTime = event.getCreateTime();
+        if (Objects.isNull(id)){
+            this.id = event.getAggregateId();
+        }
+        this.version = event.getAggregateVersion();
+        if (Objects.isNull(createTime)){
+            this.createTime = event.getCreateTime();
+        }
         this.updateTime = event.getCreateTime();
-    }
-
-    public boolean empty(){
-        return Objects.isNull(id);
     }
 
     @Override
@@ -85,6 +79,10 @@ public class BaseAggregate implements Comparable<BaseAggregate>{
         return id;
     }
 
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     public Integer getVersion() {
         return version;
     }
@@ -97,4 +95,11 @@ public class BaseAggregate implements Comparable<BaseAggregate>{
         return updateTime;
     }
 
+    public void setChanged(boolean changed) {
+        this.changed = changed;
+    }
+
+    public boolean isChanged(){
+        return changed;
+    }
 }

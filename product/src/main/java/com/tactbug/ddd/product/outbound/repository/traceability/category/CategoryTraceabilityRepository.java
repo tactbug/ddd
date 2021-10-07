@@ -4,14 +4,16 @@ import com.tactbug.ddd.common.entity.Event;
 import com.tactbug.ddd.common.utils.IdUtil;
 import com.tactbug.ddd.product.TactProductApplication;
 import com.tactbug.ddd.product.aggregate.category.Category;
+import com.tactbug.ddd.product.assist.exception.TactProductException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 
 /**
  * @Author tactbug
@@ -20,6 +22,7 @@ import java.util.Optional;
  */
 @Component
 @EnableR2dbcRepositories
+@Slf4j
 public class CategoryTraceabilityRepository {
 
     private static final IdUtil CATEGORY_EVENT_ID_UTIL = IdUtil.getOrGenerate(
@@ -31,7 +34,7 @@ public class CategoryTraceabilityRepository {
     @Resource
     private CategoryEventRepository eventRepository;
 
-    public Optional<Category> getOneById(Long id){
+    public Mono<Category> getOneById(Long id){
         Category category = null;
         int startVersion = 0;
         Optional<Category> snapshot = snapshot(id);
@@ -39,19 +42,20 @@ public class CategoryTraceabilityRepository {
             category = snapshot.get();
             startVersion = category.getVersion();
         }
-        List<Event<Category>> events = eventRepository.findAllByAggregateIdAndVersionIsAfter(id, startVersion)
+        Category finalCategory = category;
+        return eventRepository.findAllByAggregateIdAndVersionIsAfter(id, startVersion)
                 .doOnNext(Event::check)
                 .collectList()
-                .block();
-        Category replay = Category.replay(events, category);
-        return replay.empty() ? Optional.empty() : Optional.of(replay);
+                .map(events -> Category.replay(events, finalCategory));
     }
 
-    @Transactional
-    public void create(Category category, Long operator){
-        snapshotRepository.save(category);
-        Event<Category> event = category.createCategory(CATEGORY_EVENT_ID_UTIL.getId(), operator);
-        eventRepository.save(event);
+    public Mono<Category> create(Category category, Long operator){
+        return snapshotRepository.save(category)
+                .doOnError(e -> {
+                    log.error("快照[" + category + "]保存失败", e);
+                    throw TactProductException.resourceOperateError("快照[" + category + "]保存失败");
+                })
+                .doOnNext(c -> eventRepository.save(c.createCategory(CATEGORY_EVENT_ID_UTIL.getId(), operator)));
     }
 
     private Optional<Category> snapshot(Long id){

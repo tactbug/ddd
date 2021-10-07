@@ -3,13 +3,14 @@ package com.tactbug.ddd.product.service.category;
 import com.tactbug.ddd.common.utils.IdUtil;
 import com.tactbug.ddd.product.TactProductApplication;
 import com.tactbug.ddd.product.aggregate.category.Category;
+import com.tactbug.ddd.product.aggregate.category.command.CreateCategory;
 import com.tactbug.ddd.product.assist.exception.TactProductException;
 import com.tactbug.ddd.product.outbound.repository.traceability.category.CategoryTraceabilityRepository;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
 import java.util.Objects;
-import java.util.Optional;
 
 /**
  * @Author tactbug
@@ -26,17 +27,25 @@ public class CategoryService {
             TactProductApplication.APPLICATION_NAME, Category.class, 50000, 5000, 10000
     );
 
-    public Category createCategory(String name, String remark, Long parentId, Long operator){
-        parentId = Objects.isNull(parentId) || parentId.equals(0L) ? 0L : parentId;
+    public Mono<Category> createCategory(CreateCategory createCategory){
+        Long parentId = createCategory.parentId();
+        parentId = Objects.isNull(parentId) ? 0L : parentId;
         if (!parentId.equals(0L)){
-            Optional<Category> parentOptional = categoryTraceabilityRepository.getOneById(parentId);
-            if (parentOptional.isEmpty()){
-                throw TactProductException.resourceNotExists("父分类[" + parentId + "]不存在");
-            }
+            Long finalParentId = parentId;
+            categoryTraceabilityRepository.getOneById(finalParentId)
+                    .subscribe(
+                            r -> {
+                                if (r.equals(Category.EMPTY)) {
+                                    throw TactProductException.resourceOperateError("上级分类[" + finalParentId + "]不存在");
+                                }
+                            },
+                            e -> {
+                                throw TactProductException.resourceOperateError("分类[" + finalParentId + "]查询异常");
+                            }
+                    );
         }
         Long id = CATEGORY_ID_UTIL.getId();
-        Category category = Category.generate(id, name, remark, parentId);
-        categoryTraceabilityRepository.create(category, operator);
-        return category;
+        Category category = Category.generate(id, createCategory);
+        return categoryTraceabilityRepository.create(category, createCategory.operator());
     }
 }
