@@ -44,14 +44,16 @@ public class Category extends BaseAggregate {
     @Transient
     private List<Long> brandIds;
 
-    public static final Category EMPTY = new Category();
-
     private Category(){
         super();
     }
 
     private Category(Long id) {
         super(id);
+    }
+
+    public static Category empty(){
+        return new Category();
     }
 
     public static Category generate(Long id, CreateCategory createCategory){
@@ -96,6 +98,10 @@ public class Category extends BaseAggregate {
         this.parentId = changeParent.parentId();
         update();
         return new ParentChanged(eventId, this, EventType.UPDATED, changeParent.operator());
+    }
+
+    public boolean isEmpty(){
+        return Objects.isNull(id);
     }
 
     private static Category doReplay(Category snapshot, List<Event<Category>> events) {
@@ -181,29 +187,5 @@ public class Category extends BaseAggregate {
                 ", childrenIds=" + childrenIds +
                 ", brandIds=" + brandIds +
                 '}';
-    }
-
-    @Override
-    @Transient
-    public void setChanged(boolean changed) {
-        super.setChanged(changed);
-    }
-
-    @Override
-    @Transient
-    public boolean isChanged() {
-        return super.isChanged();
-    }
-
-    @Override
-    @Id
-    public Long getId() {
-        return super.getId();
-    }
-
-    @Override
-    @Id
-    public void setId(Long id) {
-        super.setId(id);
     }
 }

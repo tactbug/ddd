@@ -35,33 +35,36 @@ public class CategoryTraceabilityRepository {
     private CategoryEventRepository eventRepository;
 
     public Mono<Category> getOneById(Long id){
-        Category category = null;
-        int startVersion = 0;
-        Optional<Category> snapshot = snapshot(id);
-        if (snapshot.isPresent()){
-            category = snapshot.get();
-            startVersion = category.getVersion();
-        }
-        Category finalCategory = category;
-        return eventRepository.findAllByAggregateIdAndVersionIsAfter(id, startVersion)
-                .doOnNext(Event::check)
-                .collectList()
-                .map(events -> Category.replay(events, finalCategory));
+        return getSnapshot(id)
+                .doOnNext(c -> eventRepository.eventsForReplay(id, c.getVersion())
+                        .doOnNext(Event::check)
+                        .collectList()
+                        .map(events -> Category.replay(events, c)))
+                .switchIfEmpty(eventRepository.eventsForReplay(id, 0)
+                            .doOnNext(Event::check)
+                            .collectList()
+                            .map(events -> Category.replay(events, Category.empty()))
+                ).doOnError(e -> {
+                    log.error("查询分类失败", e);
+                    throw TactProductException.resourceOperateError("分类[" + id + "]查询失败");
+                });
     }
 
     public Mono<Category> create(Category category, Long operator){
         return snapshotRepository.save(category)
+                .doOnNext(c -> eventRepository.save(c.createCategory(CATEGORY_EVENT_ID_UTIL.getId(), operator)))
                 .doOnError(e -> {
-                    log.error("快照[" + category + "]保存失败", e);
-                    throw TactProductException.resourceOperateError("快照[" + category + "]保存失败");
-                })
-                .doOnNext(c -> eventRepository.save(c.createCategory(CATEGORY_EVENT_ID_UTIL.getId(), operator)));
+                    log.error("分类创建失败", e);
+                    throw TactProductException.resourceOperateError("分类创建失败|-" + e.getMessage());
+                });
     }
 
-    private Optional<Category> snapshot(Long id){
-        Category category = snapshotRepository.findById(id)
+    private Mono<Category> getSnapshot(Long id){
+        return snapshotRepository.findById(id)
                 .doOnNext(Category::check)
-                .block();
-        return Objects.isNull(category) ? Optional.empty() : Optional.of(category);
+                .doOnError(e -> {
+                    log.error("分类快照查询异常", e);
+                    throw TactProductException.resourceOperateError("分类[" + id + "]快照查询异常");
+                });
     }
 }

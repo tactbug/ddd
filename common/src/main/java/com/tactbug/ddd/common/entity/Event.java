@@ -1,7 +1,5 @@
 package com.tactbug.ddd.common.entity;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-
 import java.util.Objects;
 
 /**

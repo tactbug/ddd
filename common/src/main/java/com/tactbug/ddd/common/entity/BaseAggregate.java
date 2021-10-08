@@ -1,5 +1,8 @@
 package com.tactbug.ddd.common.entity;
 
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
+
 import java.time.ZonedDateTime;
 import java.util.Objects;
 
@@ -10,8 +13,10 @@ import java.util.Objects;
  */
 public class BaseAggregate implements Comparable<BaseAggregate>{
 
+    @Id
     protected Long id;
     protected Integer version;
+    @Transient
     protected boolean changed;
     protected ZonedDateTime createTime;
     protected ZonedDateTime updateTime;

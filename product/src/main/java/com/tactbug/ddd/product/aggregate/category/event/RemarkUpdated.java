@@ -6,6 +6,7 @@ import com.tactbug.ddd.common.entity.EventType;
 import com.tactbug.ddd.common.utils.SerializeUtil;
 import com.tactbug.ddd.product.aggregate.category.Category;
 import com.tactbug.ddd.product.assist.exception.TactProductException;
+import org.springframework.data.relational.core.mapping.Table;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,6 +16,7 @@ import java.util.Map;
  * @Email tactbug@Gmail.com
  * @Time 2021/10/3 21:41
  */
+@Table("category_event")
 public class RemarkUpdated extends Event<Category> {
     public RemarkUpdated(Long id, Category category, EventType eventType, Long operator) {
         super(id, category, eventType, operator);

@@ -28,24 +28,18 @@ public class CategoryService {
     );
 
     public Mono<Category> createCategory(CreateCategory createCategory){
-        Long parentId = createCategory.parentId();
-        parentId = Objects.isNull(parentId) ? 0L : parentId;
-        if (!parentId.equals(0L)){
-            Long finalParentId = parentId;
-            categoryTraceabilityRepository.getOneById(finalParentId)
-                    .subscribe(
-                            r -> {
-                                if (r.equals(Category.EMPTY)) {
-                                    throw TactProductException.resourceOperateError("上级分类[" + finalParentId + "]不存在");
-                                }
-                            },
-                            e -> {
-                                throw TactProductException.resourceOperateError("分类[" + finalParentId + "]查询异常");
-                            }
-                    );
-        }
-        Long id = CATEGORY_ID_UTIL.getId();
-        Category category = Category.generate(id, createCategory);
-        return categoryTraceabilityRepository.create(category, createCategory.operator());
+        final Long parentId = Objects.isNull(createCategory.parentId()) ? 0L : createCategory.parentId();
+        return categoryTraceabilityRepository.getOneById(parentId)
+                .map(c -> {
+                    if (!parentId.equals(0L) && c.isEmpty()){
+                        return Mono.error(TactProductException.resourceOperateError("父分类[" + parentId + "]不存在"));
+                    }
+                    return c;
+                })
+                .transform(c -> {
+                    Long id = CATEGORY_ID_UTIL.getId();
+                    Category category = Category.generate(id, createCategory);
+                    return categoryTraceabilityRepository.create(category, createCategory.operator());
+                });
     }
 }

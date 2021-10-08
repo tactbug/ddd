@@ -29,7 +29,7 @@ public class PostgreConnectionConfigurer extends AbstractR2dbcConfiguration {
         options.put("statement_timeout", "300s");
         return ConnectionFactories.get(builder()
                 .option(DRIVER, "postgresql")
-                .option(HOST, "192.168.1.200")
+                .option(HOST, "10.1.12.187")
                 .option(PORT, 5432)
                 .option(USER, "postgres")
                 .option(PASSWORD, "900922")

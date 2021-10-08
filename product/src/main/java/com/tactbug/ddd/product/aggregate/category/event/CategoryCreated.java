@@ -18,6 +18,7 @@ import java.util.Objects;
  * @Email tactbug@Gmail.com
  * @Time 2021/10/3 21:39
  */
+@Table("category_event")
 public class CategoryCreated extends Event<Category> {
 
     public CategoryCreated(Long id, Category category, EventType eventType, Long operator) {

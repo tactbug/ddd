@@ -34,7 +34,7 @@ public class IdUtil {
     private static final ConcurrentHashMap<Class<?>, PriorityBlockingQueue<Long>> ID_MAP = new ConcurrentHashMap<>();
 
     private static final HttpClient HTTP_CLIENT = HttpClient.newHttpClient();
-    private static final String URL = "http://192.168.1.200:10001/id";
+    private static final String URL = "http://10.1.12.187:10001/id";
 
     private static final ConcurrentHashMap<Class<?>, IdUtil> UTIL_MAP = new ConcurrentHashMap<>();
 
