@@ -5,5 +5,5 @@ package com.tactbug.ddd.product.aggregate.category.command;
  * @Email tactbug@Gmail.com
  * @Time 2021/10/7 16:57
  */
-public record UpdateName(String name, Long operator) {
+public record UpdateName(Long id, String name, Long operator) {
 }

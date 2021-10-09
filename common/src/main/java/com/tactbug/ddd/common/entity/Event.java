@@ -1,5 +1,7 @@
 package com.tactbug.ddd.common.entity;
 
+import javax.persistence.Column;
+import javax.persistence.MappedSuperclass;
 import java.util.Objects;
 
 /**
@@ -7,28 +9,31 @@ import java.util.Objects;
  * @Email tactbug@Gmail.com
  * @Time 2021/9/28 19:47
  */
-public abstract class Event<T extends BaseAggregate> extends BaseAggregate{
+@MappedSuperclass
+public class Event<T extends BaseAggregate> extends BaseAggregate{
 
-    protected Long aggregateId;
-    protected Class<? extends BaseAggregate> aggregateType;
-    protected Integer aggregateVersion;
+    @Column(name = "domain_id")
+    protected Long domainId;
+    protected Class<? extends BaseAggregate> domain;
+    @Column(name = "domain_version")
+    protected Integer domainVersion;
     protected EventType eventType;
     protected Long operator;
     protected String data;
 
     protected Event(Long id, T t, EventType eventType, Long operator) {
         super(id);
-        this.aggregateId = t.getId();
-        this.aggregateType = t.getClass();
-        this.aggregateVersion = t.getVersion();
+        this.domainId = t.getId();
+        this.domain = t.getClass();
+        this.domainVersion = t.getVersion();
         this.eventType = eventType;
         this.operator = operator;
-        assembleData(t);
         check();
     }
 
-    public abstract void assembleData(T t);
-
+    public Event() {
+        super();
+    }
 
     public void check() {
         super.check();
@@ -42,13 +47,13 @@ public abstract class Event<T extends BaseAggregate> extends BaseAggregate{
     }
 
     private void checkNull(){
-        if (Objects.isNull(aggregateId)){
+        if (Objects.isNull(domainId)){
             throw new IllegalArgumentException("聚合ID不能为空");
         }
-        if (Objects.isNull(aggregateType)){
+        if (Objects.isNull(domain)){
             throw new IllegalArgumentException("聚合类型不能为空");
         }
-        if (Objects.isNull(aggregateVersion)){
+        if (Objects.isNull(domainVersion)){
             throw new IllegalArgumentException("聚合版本不能为空");
         }
         if (Objects.isNull(eventType)){
@@ -59,16 +64,16 @@ public abstract class Event<T extends BaseAggregate> extends BaseAggregate{
         }
     }
 
-    public Long getAggregateId() {
-        return aggregateId;
+    public Long getDomainId() {
+        return domainId;
     }
 
-    public Class<? extends BaseAggregate> getAggregateType() {
-        return aggregateType;
+    public Class<? extends BaseAggregate> getDomain() {
+        return domain;
     }
 
-    public Integer getAggregateVersion() {
-        return aggregateVersion;
+    public Integer getDomainVersion() {
+        return domainVersion;
     }
 
     public EventType getEventType() {

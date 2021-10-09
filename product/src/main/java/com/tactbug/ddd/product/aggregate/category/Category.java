@@ -16,10 +16,8 @@ import com.tactbug.ddd.product.aggregate.category.event.ParentChanged;
 import com.tactbug.ddd.product.aggregate.category.event.RemarkUpdated;
 import com.tactbug.ddd.product.assist.exception.TactProductException;
 import lombok.Getter;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Transient;
-import org.springframework.data.relational.core.mapping.Table;
 
+import javax.persistence.*;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -32,28 +30,29 @@ import java.util.stream.Collectors;
  * @Time 2021/9/28 19:15
  */
 @Getter
-@Table("category_snapshot")
+@Entity
+@Table(name = "category_snapshot",
+        indexes = {@Index(name = "idx_parent_id", columnList = "parent_id")},
+        uniqueConstraints = {@UniqueConstraint(name = "name", columnNames = {"name"})}
+)
 public class Category extends BaseAggregate {
 
     private String name;
     private String remark;
+    @Column(name = "parent_id")
     private Long parentId;
 
-    @Transient
+    @ElementCollection
     private List<Long> childrenIds;
-    @Transient
+    @ElementCollection
     private List<Long> brandIds;
-
-    private Category(){
-        super();
-    }
 
     private Category(Long id) {
         super(id);
     }
 
-    public static Category empty(){
-        return new Category();
+    public Category() {
+        super();
     }
 
     public static Category generate(Long id, CreateCategory createCategory){
@@ -64,7 +63,7 @@ public class Category extends BaseAggregate {
         return category;
     }
 
-    public static Category replay(Collection<Event<Category>> events, Category snapshot) {
+    public static Category replay(Collection<CategoryEvent> events, Category snapshot) {
         if (Objects.isNull(snapshot)){
             snapshot = new Category();
         }
@@ -72,36 +71,32 @@ public class Category extends BaseAggregate {
             return snapshot;
         }
         List<Event<Category>> sortedEvents = events.stream().sorted().collect(Collectors.toList());
-        if (sortedEvents.get(0).getAggregateVersion() - snapshot.getVersion() != 1){
-            throw new IllegalStateException("快照版本[" + snapshot.getVersion() + "]跟溯源版本[" + sortedEvents.get(0).getAggregateVersion() + "]不匹配");
+        if (sortedEvents.get(0).getDomainVersion() - snapshot.getVersion() != 1){
+            throw new IllegalStateException("快照版本[" + snapshot.getVersion() + "]跟溯源版本[" + sortedEvents.get(0).getDomainVersion() + "]不匹配");
         }
         return doReplay(snapshot, sortedEvents);
     }
 
-    public Event<Category> createCategory(Long eventId, Long operator) {
+    public CategoryCreated createCategory(Long eventId, Long operator) {
         return new CategoryCreated(eventId, this, EventType.CREATED, operator);
     }
 
-    public Event<Category> updateName(Long eventId, UpdateName updateName) {
+    public NameUpdated updateName(Long eventId, UpdateName updateName) {
         this.name = updateName.name();
         update();
         return new NameUpdated(eventId, this, EventType.UPDATED, updateName.operator());
     }
 
-    public Event<Category> updateRemark(Long eventId, UpdateRemark updateRemark){
+    public RemarkUpdated updateRemark(Long eventId, UpdateRemark updateRemark){
         this.remark = updateRemark.remark();
         update();
         return new RemarkUpdated(eventId, this, EventType.UPDATED, updateRemark.operator());
     }
 
-    public Event<Category> changeParent(Long eventId, ChangeParent changeParent) {
+    public ParentChanged changeParent(Long eventId, ChangeParent changeParent) {
         this.parentId = changeParent.parentId();
         update();
         return new ParentChanged(eventId, this, EventType.UPDATED, changeParent.operator());
-    }
-
-    public boolean isEmpty(){
-        return Objects.isNull(id);
     }
 
     private static Category doReplay(Category snapshot, List<Event<Category>> events) {
@@ -109,10 +104,10 @@ public class Category extends BaseAggregate {
             Event<Category> current = events.get(i);
             if (i < events.size() - 1){
                 Event<Category> next = events.get(i + 1);
-                if (next.getAggregateVersion() - current.getAggregateVersion() != 1){
+                if (next.getDomainVersion() - current.getDomainVersion() != 1){
                     throw new IllegalStateException("溯源版本顺序错误, " +
-                            "current[" + current.getId() + "]版本[" + current.getAggregateVersion() + "], " +
-                            "next[" + next.getId() + "]版本[" + next.getAggregateVersion() +"]");
+                            "current[" + current.getId() + "]版本[" + current.getDomainVersion() + "], " +
+                            "next[" + next.getId() + "]版本[" + next.getDomainVersion() +"]");
                 }
                 if (current.getEventType().equals(EventType.DELETED)){
                     throw new IllegalStateException("溯源删除事件[" + current.getId() + "]后不能有后续事件");
@@ -188,4 +183,5 @@ public class Category extends BaseAggregate {
                 ", brandIds=" + brandIds +
                 '}';
     }
+
 }

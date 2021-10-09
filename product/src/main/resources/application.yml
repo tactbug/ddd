@@ -3,3 +3,11 @@ server:
 spring:
   webflux:
     base-path: product
+  jpa:
+    hibernate:
+      ddl-auto: update
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    username: postgres
+    password: 900922
+    url: postgresql://10.1.12.187:5432/postgres

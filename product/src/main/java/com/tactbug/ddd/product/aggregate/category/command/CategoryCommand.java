@@ -12,6 +12,7 @@ import java.util.Objects;
 @Setter
 public class CategoryCommand {
 
+    private Long id;
     private String name;
     private String remark;
     private Long parentId;
@@ -24,17 +25,17 @@ public class CategoryCommand {
 
     public UpdateName updateName(){
         checkUpdateName();
-        return new UpdateName(name, operator);
+        return new UpdateName(id, name, operator);
     }
 
     public UpdateRemark updateRemark(){
         checkUpdateRemark();
-        return new UpdateRemark(remark, operator);
+        return new UpdateRemark(id, remark, operator);
     }
 
     public ChangeParent changeParent(){
-        checkUpdateRemark();
-        return new ChangeParent(parentId, operator);
+        checkChangeParent();
+        return new ChangeParent(id, parentId, operator);
     }
 
     private void checkCreateCategory(){
@@ -44,20 +45,29 @@ public class CategoryCommand {
     }
 
     private void checkUpdateName(){
+        checkId();
         if (Objects.isNull(name) || name.isBlank()){
             throw new IllegalArgumentException("分类名称不能为空");
         }
     }
 
     private void checkUpdateRemark(){
+        checkId();
         if (Objects.isNull(remark)){
             remark = "";
         }
     }
 
     private void checkChangeParent(){
+        checkId();
         if (Objects.isNull(parentId)){
             throw new IllegalArgumentException("必须指定父分类");
+        }
+    }
+
+    private void checkId(){
+        if (Objects.isNull(id)){
+            throw new IllegalArgumentException("分类ID不能为空");
         }
     }
 }

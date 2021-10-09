@@ -1,8 +1,8 @@
 package com.tactbug.ddd.common.entity;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Transient;
-
+import javax.persistence.Id;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.Transient;
 import java.time.ZonedDateTime;
 import java.util.Objects;
 
@@ -11,6 +11,7 @@ import java.util.Objects;
  * @Email tactbug@Gmail.com
  * @Time 2021/9/28 19:41
  */
+@MappedSuperclass
 public class BaseAggregate implements Comparable<BaseAggregate>{
 
     @Id
@@ -20,10 +21,12 @@ public class BaseAggregate implements Comparable<BaseAggregate>{
     protected boolean changed;
     protected ZonedDateTime createTime;
     protected ZonedDateTime updateTime;
+    protected boolean isDel;
 
     protected BaseAggregate(){
         this.version = 0;
         this.changed = false;
+        this.isDel = false;
     }
 
     protected BaseAggregate(Long id){
@@ -32,6 +35,7 @@ public class BaseAggregate implements Comparable<BaseAggregate>{
         this.changed = true;
         this.createTime = ZonedDateTime.now();
         this.updateTime = ZonedDateTime.now();
+        this.isDel = false;
     }
 
     public void update(){
@@ -60,9 +64,9 @@ public class BaseAggregate implements Comparable<BaseAggregate>{
 
     public void replay(Event<? extends BaseAggregate> event) {
         if (Objects.isNull(id)){
-            this.id = event.getAggregateId();
+            this.id = event.getDomainId();
         }
-        this.version = event.getAggregateVersion();
+        this.version = event.getDomainVersion();
         if (Objects.isNull(createTime)){
             this.createTime = event.getCreateTime();
         }
@@ -92,19 +96,39 @@ public class BaseAggregate implements Comparable<BaseAggregate>{
         return version;
     }
 
-    public ZonedDateTime getCreateTime() {
-        return createTime;
+    public void setVersion(Integer version) {
+        this.version = version;
     }
 
-    public ZonedDateTime getUpdateTime() {
-        return updateTime;
+    public boolean isChanged() {
+        return changed;
     }
 
     public void setChanged(boolean changed) {
         this.changed = changed;
     }
 
-    public boolean isChanged(){
-        return changed;
+    public ZonedDateTime getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(ZonedDateTime createTime) {
+        this.createTime = createTime;
+    }
+
+    public ZonedDateTime getUpdateTime() {
+        return updateTime;
+    }
+
+    public void setUpdateTime(ZonedDateTime updateTime) {
+        this.updateTime = updateTime;
+    }
+
+    public boolean isDel() {
+        return isDel;
+    }
+
+    public void setDel(boolean delFlag) {
+        this.isDel = delFlag;
     }
 }

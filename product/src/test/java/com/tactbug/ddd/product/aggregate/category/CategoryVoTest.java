@@ -5,7 +5,7 @@ import com.tactbug.ddd.common.utils.IdUtil;
 import com.tactbug.ddd.product.TactProductApplication;
 import com.tactbug.ddd.product.aggregate.category.command.CategoryCommand;
 import com.tactbug.ddd.product.aggregate.category.command.CreateCategory;
-import com.tactbug.ddd.product.outbound.repository.traceability.category.CategoryTraceabilityRepository;
+import com.tactbug.ddd.product.outbound.repository.jpa.category.CategoryRepository;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -18,13 +18,10 @@ import static org.junit.jupiter.api.Assertions.*;
  * @Email tactbug@Gmail.com
  * @Time 2021/10/7 15:38
  */
-class CategoryTest {
+class CategoryVoTest {
 
     private static final IdUtil CATEGORY_ID_UTIL = IdUtil.getOrGenerate(
             TactProductApplication.APPLICATION_NAME, Category.class, null, null, null
-    );
-    private static final IdUtil CATEGORY_EVENT_ID_UTIL = IdUtil.getOrGenerate(
-            TactProductApplication.APPLICATION_NAME, CategoryTraceabilityRepository.class, null, null, null
     );
 
 
@@ -41,19 +38,20 @@ class CategoryTest {
         CreateCategory createCategory = categoryCommand.createCategory();
         Category category = Category.generate(id, createCategory);
 
-        List<Event<Category>> events = new ArrayList<>();
+        List<CategoryEvent> events = new ArrayList<>();
 
-        Long createId = CATEGORY_EVENT_ID_UTIL.getId();
-        Event<Category> create = category.createCategory(createId, createCategory.operator());
+        Long createId = CATEGORY_ID_UTIL.getId();
+        CategoryEvent create = category.createCategory(createId, createCategory.operator());
+        categoryCommand.setId(category.getId());
 
-        Long updateNameId = CATEGORY_EVENT_ID_UTIL.getId();
-        Event<Category> updateName = category.updateName(updateNameId, categoryCommand.updateName());
+        Long updateNameId = CATEGORY_ID_UTIL.getId();
+        CategoryEvent updateName = category.updateName(updateNameId, categoryCommand.updateName());
 
-        Long updateRemarkId = CATEGORY_EVENT_ID_UTIL.getId();
-        Event<Category> updateRemark = category.updateRemark(updateRemarkId, categoryCommand.updateRemark());
+        Long updateRemarkId = CATEGORY_ID_UTIL.getId();
+        CategoryEvent updateRemark = category.updateRemark(updateRemarkId, categoryCommand.updateRemark());
 
-        Long changeParentId = CATEGORY_EVENT_ID_UTIL.getId();
-        Event<Category> changeParent = category.changeParent(changeParentId, categoryCommand.changeParent());
+        Long changeParentId = CATEGORY_ID_UTIL.getId();
+        CategoryEvent changeParent = category.changeParent(changeParentId, categoryCommand.changeParent());
 
         events.add(create);
         events.add(updateName);
