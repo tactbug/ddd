@@ -1,4 +1,4 @@
-package com.tactbug.ddd.product.aggregate.category.command;
+package com.tactbug.ddd.product.domain.category.command;
 
 /**
  * @Author tactbug

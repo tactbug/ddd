@@ -1,11 +1,9 @@
-package com.tactbug.ddd.product.aggregate.category;
+package com.tactbug.ddd.product.domain.category;
 
-import com.tactbug.ddd.common.entity.Event;
 import com.tactbug.ddd.common.utils.IdUtil;
 import com.tactbug.ddd.product.TactProductApplication;
-import com.tactbug.ddd.product.aggregate.category.command.CategoryCommand;
-import com.tactbug.ddd.product.aggregate.category.command.CreateCategory;
-import com.tactbug.ddd.product.outbound.repository.jpa.category.CategoryRepository;
+import com.tactbug.ddd.product.domain.category.command.CategoryCommand;
+import com.tactbug.ddd.product.domain.category.command.CreateCategory;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;

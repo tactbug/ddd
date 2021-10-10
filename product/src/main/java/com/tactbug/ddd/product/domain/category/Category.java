@@ -1,27 +1,19 @@
-package com.tactbug.ddd.product.aggregate.category;
+package com.tactbug.ddd.product.domain.category;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.tactbug.ddd.common.entity.BaseAggregate;
+import com.tactbug.ddd.common.entity.BaseDomain;
 import com.tactbug.ddd.common.entity.Event;
 import com.tactbug.ddd.common.entity.EventType;
+import com.tactbug.ddd.common.utils.IdUtil;
 import com.tactbug.ddd.common.utils.SerializeUtil;
-import com.tactbug.ddd.product.aggregate.category.command.ChangeParent;
-import com.tactbug.ddd.product.aggregate.category.command.CreateCategory;
-import com.tactbug.ddd.product.aggregate.category.command.UpdateName;
-import com.tactbug.ddd.product.aggregate.category.command.UpdateRemark;
-import com.tactbug.ddd.product.aggregate.category.event.CategoryCreated;
-import com.tactbug.ddd.product.aggregate.category.event.NameUpdated;
-import com.tactbug.ddd.product.aggregate.category.event.ParentChanged;
-import com.tactbug.ddd.product.aggregate.category.event.RemarkUpdated;
+import com.tactbug.ddd.product.domain.category.command.*;
+import com.tactbug.ddd.product.domain.category.event.*;
 import com.tactbug.ddd.product.assist.exception.TactProductException;
 import lombok.Getter;
 
 import javax.persistence.*;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -32,10 +24,9 @@ import java.util.stream.Collectors;
 @Getter
 @Entity
 @Table(name = "category_snapshot",
-        indexes = {@Index(name = "idx_parent_id", columnList = "parent_id")},
-        uniqueConstraints = {@UniqueConstraint(name = "name", columnNames = {"name"})}
+        indexes = {@Index(name = "idx_parent_id", columnList = "parent_id")}
 )
-public class Category extends BaseAggregate {
+public class Category extends BaseDomain {
 
     private String name;
     private String remark;
@@ -97,6 +88,26 @@ public class Category extends BaseAggregate {
         this.parentId = changeParent.parentId();
         update();
         return new ParentChanged(eventId, this, EventType.UPDATED, changeParent.operator());
+    }
+
+    public List<CategoryEvent> update(CategoryCommand categoryCommand, IdUtil eventIdUtil){
+        List<CategoryEvent> events = new ArrayList<>();
+        if (Objects.nonNull(categoryCommand.getName()) && !categoryCommand.getName().equals(name)){
+            events.add(updateName(eventIdUtil.getId(), categoryCommand.updateName()));
+        }
+        if (Objects.nonNull(categoryCommand.getRemark()) && !categoryCommand.getRemark().equals(remark)){
+            events.add(updateRemark(eventIdUtil.getId(), categoryCommand.updateRemark()));
+        }
+        if (Objects.nonNull(categoryCommand.getParentId()) && !categoryCommand.getParentId().equals(parentId)){
+            events.add(changeParent(eventIdUtil.getId(), categoryCommand.changeParent()));
+        }
+        return events;
+    }
+
+    public CategoryDeleted delete(Long eventId, DeleteCategory deleteCategory){
+        setDelFlag(true);
+        update();
+        return new CategoryDeleted(eventId, this, EventType.DELETED, deleteCategory.operator());
     }
 
     private static Category doReplay(Category snapshot, List<Event<Category>> events) {

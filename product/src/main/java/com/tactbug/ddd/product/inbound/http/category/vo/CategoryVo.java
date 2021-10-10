@@ -1,6 +1,6 @@
 package com.tactbug.ddd.product.inbound.http.category.vo;
 
-import com.tactbug.ddd.product.aggregate.category.Category;
+import com.tactbug.ddd.product.domain.category.Category;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;
 

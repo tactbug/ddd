@@ -1,10 +1,12 @@
 package com.tactbug.ddd.product.outbound.repository.jpa.category;
 
-import com.tactbug.ddd.product.aggregate.category.CategoryEvent;
+import com.tactbug.ddd.common.entity.EventType;
+import com.tactbug.ddd.product.domain.category.CategoryEvent;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * @Author tactbug
@@ -13,5 +15,8 @@ import java.util.Collection;
  */
 @Repository
 public interface CategoryEventRepository extends JpaRepository<CategoryEvent, Long> {
-    Collection<CategoryEvent> findAllByDomainIdAndDomainVersionGreaterThan(Long domainId, Integer domainVersion);
+    List<CategoryEvent> findAllByDomainIdAndDomainVersionGreaterThanOrderByDomainVersionAsc(Long domainId, Integer domainVersion);
+    boolean existsByDomainIdAndEventType(Long id, EventType eventType);
+    boolean existsByDomainId(Long id);
+    boolean existsByCategoryNameAndEventType(String name, EventType eventType);
 }

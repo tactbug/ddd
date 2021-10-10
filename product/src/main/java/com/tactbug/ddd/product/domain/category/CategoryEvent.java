@@ -1,17 +1,26 @@
-package com.tactbug.ddd.product.aggregate.category;
+package com.tactbug.ddd.product.domain.category;
 
 import com.tactbug.ddd.common.entity.Event;
 import com.tactbug.ddd.common.entity.EventType;
+import lombok.Data;
 
 import javax.persistence.Entity;
+import javax.persistence.Index;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
 @Entity
-@Table(name = "category_event", uniqueConstraints = {@UniqueConstraint(columnNames = {"domain_id", "domain_version"})})
+@Table(name = "category_event",
+        uniqueConstraints = {@UniqueConstraint(columnNames = {"domain_id", "domain_version"})},
+        indexes = {@Index(columnList = "domain_id")}
+)
 public class CategoryEvent extends Event<Category> {
+
+    private String categoryName;
+
     public CategoryEvent(Long id, Category category, EventType eventType, Long operator){
         super(id, category, eventType, operator);
+        this.categoryName = category.getName();
     }
 
     public CategoryEvent() {

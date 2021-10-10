@@ -1,6 +1,6 @@
 package com.tactbug.ddd.common.utils;
 
-import com.tactbug.ddd.common.entity.BaseAggregate;
+import com.tactbug.ddd.common.entity.BaseDomain;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class IdUtilTest {
     @Test
     public void testGet() throws InterruptedException {
-        IdUtil common = IdUtil.getOrGenerate("common", BaseAggregate.class, null, null, null);
+        IdUtil common = IdUtil.getOrGenerate("common", BaseDomain.class, null, null, null);
         ConcurrentHashMap<Integer, List<Long>> idMap = new ConcurrentHashMap<>();
         ArrayList<Integer> threads = new ArrayList<>(10);
         for (int i = 0; i < 1000; i++) {

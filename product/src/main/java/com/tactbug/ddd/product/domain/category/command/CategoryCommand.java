@@ -1,5 +1,6 @@
-package com.tactbug.ddd.product.aggregate.category.command;
+package com.tactbug.ddd.product.domain.category.command;
 
+import lombok.Getter;
 import lombok.Setter;
 
 import java.util.Objects;
@@ -10,6 +11,7 @@ import java.util.Objects;
  * @Time 2021/10/7 15:17
  */
 @Setter
+@Getter
 public class CategoryCommand {
 
     private Long id;
@@ -38,6 +40,11 @@ public class CategoryCommand {
         return new ChangeParent(id, parentId, operator);
     }
 
+    public DeleteCategory deleteCategory(){
+        checkDeleteCategory();
+        return new DeleteCategory(id, operator);
+    }
+
     private void checkCreateCategory(){
         if (Objects.isNull(name) || name.isBlank()){
             throw new IllegalArgumentException("分类名称不能为空");
@@ -63,6 +70,10 @@ public class CategoryCommand {
         if (Objects.isNull(parentId)){
             throw new IllegalArgumentException("必须指定父分类");
         }
+    }
+
+    private void checkDeleteCategory(){
+        checkId();
     }
 
     private void checkId(){

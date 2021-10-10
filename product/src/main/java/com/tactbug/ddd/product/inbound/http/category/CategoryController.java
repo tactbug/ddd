@@ -1,12 +1,11 @@
 package com.tactbug.ddd.product.inbound.http.category;
 
 import com.tactbug.ddd.common.entity.Result;
-import com.tactbug.ddd.product.aggregate.category.Category;
-import com.tactbug.ddd.product.aggregate.category.command.CategoryCommand;
+import com.tactbug.ddd.product.domain.category.Category;
+import com.tactbug.ddd.product.domain.category.command.CategoryCommand;
 import com.tactbug.ddd.product.inbound.http.category.vo.CategoryVo;
 import com.tactbug.ddd.product.service.category.CategoryService;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
 import java.util.Optional;
@@ -32,6 +31,19 @@ public class CategoryController {
     @PutMapping("/name")
     public Result<CategoryVo> updateName(@RequestBody CategoryCommand categoryCommand){
         Category category = categoryService.updateName(categoryCommand.updateName());
+        return Result.success(CategoryVo.generate(category));
+    }
+
+    @PutMapping("/")
+    public Result<CategoryVo> update(@RequestBody CategoryCommand categoryCommand){
+        Category category = categoryService.update(categoryCommand);
+        return Result.success(CategoryVo.generate(category));
+    }
+
+    @DeleteMapping("/")
+    public Result<CategoryVo> delete(@RequestBody CategoryCommand categoryCommand){
+        Category category = categoryService.delete(categoryCommand)
+                .orElse(new Category());
         return Result.success(CategoryVo.generate(category));
     }
 

@@ -12,7 +12,7 @@ import java.util.Objects;
  * @Time 2021/9/28 19:41
  */
 @MappedSuperclass
-public class BaseAggregate implements Comparable<BaseAggregate>{
+public class BaseDomain implements Comparable<BaseDomain>{
 
     @Id
     protected Long id;
@@ -21,21 +21,21 @@ public class BaseAggregate implements Comparable<BaseAggregate>{
     protected boolean changed;
     protected ZonedDateTime createTime;
     protected ZonedDateTime updateTime;
-    protected boolean isDel;
+    protected boolean delFlag;
 
-    protected BaseAggregate(){
+    protected BaseDomain(){
         this.version = 0;
         this.changed = false;
-        this.isDel = false;
+        this.delFlag = false;
     }
 
-    protected BaseAggregate(Long id){
+    protected BaseDomain(Long id){
         this.id = id;
         this.version = 1;
         this.changed = true;
         this.createTime = ZonedDateTime.now();
         this.updateTime = ZonedDateTime.now();
-        this.isDel = false;
+        this.delFlag = false;
     }
 
     public void update(){
@@ -62,7 +62,7 @@ public class BaseAggregate implements Comparable<BaseAggregate>{
         }
     }
 
-    public void replay(Event<? extends BaseAggregate> event) {
+    public void replay(Event<? extends BaseDomain> event) {
         if (Objects.isNull(id)){
             this.id = event.getDomainId();
         }
@@ -74,7 +74,7 @@ public class BaseAggregate implements Comparable<BaseAggregate>{
     }
 
     @Override
-    public int compareTo(BaseAggregate o) {
+    public int compareTo(BaseDomain o) {
         if (updateTime.isEqual(o.getUpdateTime())){
             return 0;
         }else if (updateTime.isBefore(o.getUpdateTime())){
@@ -124,11 +124,11 @@ public class BaseAggregate implements Comparable<BaseAggregate>{
         this.updateTime = updateTime;
     }
 
-    public boolean isDel() {
-        return isDel;
+    public boolean isDelFlag() {
+        return delFlag;
     }
 
-    public void setDel(boolean delFlag) {
-        this.isDel = delFlag;
+    public void setDelFlag(boolean delFlag) {
+        this.delFlag = delFlag;
     }
 }

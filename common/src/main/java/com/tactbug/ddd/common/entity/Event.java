@@ -10,11 +10,11 @@ import java.util.Objects;
  * @Time 2021/9/28 19:47
  */
 @MappedSuperclass
-public class Event<T extends BaseAggregate> extends BaseAggregate{
+public class Event<T extends BaseDomain> extends BaseDomain {
 
     @Column(name = "domain_id")
     protected Long domainId;
-    protected Class<? extends BaseAggregate> domain;
+    protected Class<? extends BaseDomain> domain;
     @Column(name = "domain_version")
     protected Integer domainVersion;
     protected EventType eventType;
@@ -41,9 +41,9 @@ public class Event<T extends BaseAggregate> extends BaseAggregate{
     }
 
     @Override
-    public int compareTo(BaseAggregate o) {
-        Event<? extends BaseAggregate> other = (Event<? extends BaseAggregate>) o;
-        return this.getVersion() - other.getVersion();
+    public int compareTo(BaseDomain o) {
+        Event<? extends BaseDomain> other = (Event<? extends BaseDomain>) o;
+        return this.getDomainVersion() - other.getDomainVersion();
     }
 
     private void checkNull(){
@@ -68,7 +68,7 @@ public class Event<T extends BaseAggregate> extends BaseAggregate{
         return domainId;
     }
 
-    public Class<? extends BaseAggregate> getDomain() {
+    public Class<? extends BaseDomain> getDomain() {
         return domain;
     }
 
