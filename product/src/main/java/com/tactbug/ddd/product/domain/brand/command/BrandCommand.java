@@ -1,10 +1,14 @@
 package com.tactbug.ddd.product.domain.brand.command;
 
 import com.tactbug.ddd.common.entity.BaseCommand;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.util.List;
 import java.util.Objects;
 
+@Data
+@EqualsAndHashCode(callSuper = true)
 public class BrandCommand extends BaseCommand {
 
     private String name;

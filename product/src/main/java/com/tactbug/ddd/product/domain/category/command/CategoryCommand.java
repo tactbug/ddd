@@ -1,7 +1,8 @@
 package com.tactbug.ddd.product.domain.category.command;
 
-import lombok.Getter;
-import lombok.Setter;
+import com.tactbug.ddd.common.entity.BaseCommand;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.util.Objects;
 
@@ -10,11 +11,10 @@ import java.util.Objects;
  * @Email tactbug@Gmail.com
  * @Time 2021/10/7 15:17
  */
-@Setter
-@Getter
-public class CategoryCommand {
+@Data
+@EqualsAndHashCode(callSuper = true)
+public class CategoryCommand extends BaseCommand {
 
-    private Long id;
     private String name;
     private String remark;
     private Long parentId;
@@ -76,9 +76,4 @@ public class CategoryCommand {
         checkId();
     }
 
-    private void checkId(){
-        if (Objects.isNull(id)){
-            throw new IllegalArgumentException("分类ID不能为空");
-        }
-    }
 }

@@ -2,6 +2,7 @@ package com.tactbug.ddd.common.entity;
 
 import javax.persistence.Column;
 import javax.persistence.MappedSuperclass;
+import java.util.List;
 import java.util.Objects;
 
 /**

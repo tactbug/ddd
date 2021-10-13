@@ -61,24 +61,28 @@ public class Category extends BaseDomain {
     }
 
     public CategoryCreated createCategory(Long eventId, Long operator) {
+        check();
         return new CategoryCreated(eventId, this, EventType.CREATED, operator);
     }
 
     public NameUpdated updateName(Long eventId, UpdateName updateName) {
         this.name = updateName.name();
         update();
+        check();
         return new NameUpdated(eventId, this, EventType.UPDATED, updateName.operator());
     }
 
     public RemarkUpdated updateRemark(Long eventId, UpdateRemark updateRemark){
         this.remark = updateRemark.remark();
         update();
+        check();
         return new RemarkUpdated(eventId, this, EventType.UPDATED, updateRemark.operator());
     }
 
     public ParentChanged changeParent(Long eventId, ChangeParent changeParent) {
         this.parentId = changeParent.parentId();
         update();
+        check();
         return new ParentChanged(eventId, this, EventType.UPDATED, changeParent.operator());
     }
 
@@ -93,6 +97,7 @@ public class Category extends BaseDomain {
         if (Objects.nonNull(categoryCommand.getParentId()) && !categoryCommand.getParentId().equals(parentId)){
             events.add(changeParent(eventIdUtil.getId(), categoryCommand.changeParent()));
         }
+        check();
         return events;
     }
 
