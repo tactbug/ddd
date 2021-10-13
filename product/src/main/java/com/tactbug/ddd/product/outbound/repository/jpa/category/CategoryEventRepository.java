@@ -1,11 +1,10 @@
 package com.tactbug.ddd.product.outbound.repository.jpa.category;
 
 import com.tactbug.ddd.common.entity.EventType;
-import com.tactbug.ddd.product.domain.category.CategoryEvent;
+import com.tactbug.ddd.product.domain.category.event.CategoryEvent;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.Collection;
 import java.util.List;
 
 /**

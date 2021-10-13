@@ -10,6 +10,7 @@
     <modules>
         <module>product</module>
         <module>common</module>
+        <module>gateway</module>
     </modules>
 
     <packaging>pom</packaging>
@@ -23,6 +24,16 @@
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
+        <swagger.version>3.0.0</swagger.version>
     </properties>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.springfox</groupId>
+                <artifactId>springfox-boot-starter</artifactId>
+                <version>${swagger.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 </project>

@@ -4,7 +4,7 @@ import com.tactbug.ddd.common.entity.EventType;
 import com.tactbug.ddd.common.utils.IdUtil;
 import com.tactbug.ddd.product.TactProductApplication;
 import com.tactbug.ddd.product.domain.category.Category;
-import com.tactbug.ddd.product.domain.category.CategoryEvent;
+import com.tactbug.ddd.product.domain.category.event.CategoryEvent;
 import com.tactbug.ddd.product.domain.category.event.CategoryCreated;
 import com.tactbug.ddd.product.assist.exception.TactProductException;
 import com.tactbug.ddd.product.domain.category.event.CategoryDeleted;
@@ -39,7 +39,7 @@ public class CategoryRepository {
             throw TactProductException.resourceOperateError("分类[" + id + "]已被删除");
         }
         Category snapshot = getSnapshot(id).orElse(new Category());
-        List<CategoryEvent> events = eventRepository.findAllByDomainIdAndDomainVersionGreaterThanOrderByDomainVersionAsc(snapshot.getId(), snapshot.getVersion());
+        List<CategoryEvent> events = eventRepository.findAllByDomainIdAndDomainVersionGreaterThanOrderByDomainVersionAsc(id, snapshot.getVersion());
         Category category = Category.replay(events, snapshot);
         category.check();
         return Optional.of(category);

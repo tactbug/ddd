@@ -4,6 +4,7 @@ import com.tactbug.ddd.common.utils.IdUtil;
 import com.tactbug.ddd.product.TactProductApplication;
 import com.tactbug.ddd.product.domain.category.command.CategoryCommand;
 import com.tactbug.ddd.product.domain.category.command.CreateCategory;
+import com.tactbug.ddd.product.domain.category.event.CategoryEvent;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -16,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * @Email tactbug@Gmail.com
  * @Time 2021/10/7 15:38
  */
-class CategoryVoTest {
+class CategoryTest {
 
     private static final IdUtil CATEGORY_ID_UTIL = IdUtil.getOrGenerate(
             TactProductApplication.APPLICATION_NAME, Category.class, null, null, null

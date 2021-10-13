@@ -12,7 +12,6 @@ import com.tactbug.ddd.product.domain.category.event.*;
 import com.tactbug.ddd.product.assist.exception.TactProductException;
 import lombok.Getter;
 
-import javax.persistence.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -22,20 +21,13 @@ import java.util.stream.Collectors;
  * @Time 2021/9/28 19:15
  */
 @Getter
-@Entity
-@Table(name = "category_snapshot",
-        indexes = {@Index(name = "idx_parent_id", columnList = "parent_id")}
-)
 public class Category extends BaseDomain {
 
     private String name;
     private String remark;
-    @Column(name = "parent_id")
     private Long parentId;
 
-    @ElementCollection
     private List<Long> childrenIds;
-    @ElementCollection
     private List<Long> brandIds;
 
     private Category(Long id) {
@@ -105,7 +97,6 @@ public class Category extends BaseDomain {
     }
 
     public CategoryDeleted delete(Long eventId, DeleteCategory deleteCategory){
-        setDelFlag(true);
         update();
         return new CategoryDeleted(eventId, this, EventType.DELETED, deleteCategory.operator());
     }
@@ -184,7 +175,6 @@ public class Category extends BaseDomain {
         return "Category{" +
                 "id=" + id +
                 ", version=" + version +
-                ", changed=" + changed +
                 ", createTime=" + createTime +
                 ", updateTime=" + updateTime +
                 ", name='" + name + '\'' +

@@ -2,24 +2,20 @@ package com.tactbug.ddd.product.service.category;
 
 import com.tactbug.ddd.common.utils.IdUtil;
 import com.tactbug.ddd.product.TactProductApplication;
+import com.tactbug.ddd.product.assist.exception.TactProductException;
 import com.tactbug.ddd.product.domain.category.Category;
-import com.tactbug.ddd.product.domain.category.CategoryEvent;
+import com.tactbug.ddd.product.domain.category.event.CategoryEvent;
 import com.tactbug.ddd.product.domain.category.command.CategoryCommand;
 import com.tactbug.ddd.product.domain.category.command.CreateCategory;
-import com.tactbug.ddd.product.domain.category.command.UpdateName;
 import com.tactbug.ddd.product.domain.category.event.CategoryDeleted;
-import com.tactbug.ddd.product.domain.category.event.NameUpdated;
-import com.tactbug.ddd.product.assist.exception.TactProductException;
 import com.tactbug.ddd.product.outbound.repository.jpa.category.CategoryRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Supplier;
 
 /**
  * @Author tactbug
@@ -45,14 +41,6 @@ public class CategoryService {
         }
         Category category = Category.generate(CATEGORY_ID_UTIL.getId(), createCategory);
         categoryRepository.create(category, createCategory.operator());
-        return category;
-    }
-
-    public Category updateName(UpdateName updateName){
-        Category category = categoryRepository.getOneById(updateName.id())
-                .orElseThrow(() -> TactProductException.resourceOperateError("分类[" + updateName.id() + "]不存在"));
-        NameUpdated nameUpdated = category.updateName(CATEGORY_ID_UTIL.getId(), updateName);
-        categoryRepository.update(category, Collections.singletonList(nameUpdated));
         return category;
     }
 

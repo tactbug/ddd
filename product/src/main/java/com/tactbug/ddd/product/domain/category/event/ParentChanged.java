@@ -5,7 +5,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.tactbug.ddd.common.entity.EventType;
 import com.tactbug.ddd.common.utils.SerializeUtil;
 import com.tactbug.ddd.product.domain.category.Category;
-import com.tactbug.ddd.product.domain.category.CategoryEvent;
 import com.tactbug.ddd.product.assist.exception.TactProductException;
 
 import javax.persistence.Entity;
@@ -41,14 +40,14 @@ public class ParentChanged extends CategoryEvent {
         }
     }
 
-    public void checkData(){
+    private void checkData(){
         super.check();
         Map<String, Object> data;
         try {
             data = SerializeUtil.jsonToObject(this.data, new TypeReference<>() {
             });
         } catch (JsonProcessingException e) {
-            throw new TactProductException("json解析异常", e.getMessage());
+            throw TactProductException.jsonException(e);
         }
         if (Objects.isNull(data.get("id")) || !SerializeUtil.isNumber(data.get("id").toString())){
             throw new IllegalStateException("商品分类溯源事件[" + getId() + "]聚合ID状态异常");

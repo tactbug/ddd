@@ -1,7 +1,8 @@
-package com.tactbug.ddd.product.domain.category;
+package com.tactbug.ddd.product.domain.category.event;
 
 import com.tactbug.ddd.common.entity.Event;
 import com.tactbug.ddd.common.entity.EventType;
+import com.tactbug.ddd.product.domain.category.Category;
 import lombok.Data;
 
 import javax.persistence.Entity;

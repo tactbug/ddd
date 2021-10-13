@@ -4,3 +4,6 @@ spring:
     username: postgres
     password: 900922
     url: jdbc:postgresql://192.168.1.200:5432/postgres
+  redis:
+    host: 192.168.1.200
+    port: 6379

@@ -17,29 +17,21 @@ public class BaseDomain implements Comparable<BaseDomain>{
     @Id
     protected Long id;
     protected Integer version;
-    @Transient
-    protected boolean changed;
     protected ZonedDateTime createTime;
     protected ZonedDateTime updateTime;
-    protected boolean delFlag;
 
     protected BaseDomain(){
         this.version = 0;
-        this.changed = false;
-        this.delFlag = false;
     }
 
     protected BaseDomain(Long id){
         this.id = id;
         this.version = 1;
-        this.changed = true;
         this.createTime = ZonedDateTime.now();
         this.updateTime = ZonedDateTime.now();
-        this.delFlag = false;
     }
 
     public void update(){
-        this.changed = true;
         this.version += 1;
         this.updateTime = ZonedDateTime.now();
     }
@@ -100,14 +92,6 @@ public class BaseDomain implements Comparable<BaseDomain>{
         this.version = version;
     }
 
-    public boolean isChanged() {
-        return changed;
-    }
-
-    public void setChanged(boolean changed) {
-        this.changed = changed;
-    }
-
     public ZonedDateTime getCreateTime() {
         return createTime;
     }
@@ -124,11 +108,4 @@ public class BaseDomain implements Comparable<BaseDomain>{
         this.updateTime = updateTime;
     }
 
-    public boolean isDelFlag() {
-        return delFlag;
-    }
-
-    public void setDelFlag(boolean delFlag) {
-        this.delFlag = delFlag;
-    }
 }

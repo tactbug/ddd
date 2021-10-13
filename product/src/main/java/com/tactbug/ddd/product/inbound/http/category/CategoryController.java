@@ -22,32 +22,26 @@ public class CategoryController {
     @Resource
     private CategoryService categoryService;
 
-    @PostMapping("/create")
+    @PostMapping
     public Result<CategoryVo> create(@RequestBody CategoryCommand categoryCommand){
         Category category = categoryService.createCategory(categoryCommand.createCategory());
         return Result.success(CategoryVo.generate(category));
     }
 
-    @PutMapping("/name")
-    public Result<CategoryVo> updateName(@RequestBody CategoryCommand categoryCommand){
-        Category category = categoryService.updateName(categoryCommand.updateName());
-        return Result.success(CategoryVo.generate(category));
-    }
-
-    @PutMapping("/")
+    @PutMapping
     public Result<CategoryVo> update(@RequestBody CategoryCommand categoryCommand){
         Category category = categoryService.update(categoryCommand);
         return Result.success(CategoryVo.generate(category));
     }
 
-    @DeleteMapping("/")
+    @DeleteMapping
     public Result<CategoryVo> delete(@RequestBody CategoryCommand categoryCommand){
         Category category = categoryService.delete(categoryCommand)
                 .orElse(new Category());
         return Result.success(CategoryVo.generate(category));
     }
 
-    @GetMapping("/one")
+    @GetMapping
     public Result<CategoryVo> getOne(Long id){
         Optional<Category> optional = categoryService.getById(id);
         return optional.map(category -> Result.success(CategoryVo.generate(category))).orElseGet(Result::succeed);
