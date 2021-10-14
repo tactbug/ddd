@@ -4,35 +4,29 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.tactbug.ddd.common.entity.EventType;
 import com.tactbug.ddd.common.utils.SerializeUtil;
-import com.tactbug.ddd.product.domain.category.Category;
 import com.tactbug.ddd.product.assist.exception.TactProductException;
+import com.tactbug.ddd.product.domain.category.Category;
 
 import javax.persistence.Entity;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-/**
- * @Author tactbug
- * @Email tactbug@Gmail.com
- * @Time 2021/10/5 17:20
- */
 @Entity
-public class CategoryParentChanged extends CategoryEvent {
-    public CategoryParentChanged(Long id, Category category, EventType eventType, Long operator) {
-        super(id, category, eventType, operator);
-        assembleData(category);
-        checkData();
+public class CategoryChildrenUpdated extends CategoryEvent{
+    public CategoryChildrenUpdated(Long id, Category category, EventType eventType, Long operator){
+        super(id, category, EventType.UPDATED, operator);
+
     }
 
-    public CategoryParentChanged() {
+    public CategoryChildrenUpdated() {
         super();
     }
 
-    public void assembleData(Category category){
+    public void assembleData(Category category) {
         Map<String, Object> map = new HashMap<>();
         map.put("id", category.getId());
-        map.put("parentId", category.getParentId());
+        map.put("childrenIds", category.getChildrenIds());
         try {
             data = SerializeUtil.mapToString(map);
         } catch (JsonProcessingException e) {
@@ -52,9 +46,5 @@ public class CategoryParentChanged extends CategoryEvent {
         if (Objects.isNull(data.get("id")) || !SerializeUtil.isNumber(data.get("id").toString())){
             throw new IllegalStateException("商品分类溯源事件[" + getId() + "]聚合ID状态异常");
         }
-        if (Objects.isNull(data.get("parentId")) || !SerializeUtil.isNumber(data.get("parentId").toString())){
-            throw new IllegalStateException("商品分类溯源事件[" + getId() + "]聚合父分类ID状态异常");
-        }
     }
-
 }

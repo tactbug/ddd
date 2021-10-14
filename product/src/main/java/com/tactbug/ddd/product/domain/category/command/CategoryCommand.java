@@ -4,6 +4,7 @@ import com.tactbug.ddd.common.entity.BaseCommand;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.util.Collection;
 import java.util.Objects;
 
 /**
@@ -19,6 +20,7 @@ public class CategoryCommand extends BaseCommand {
     private String remark;
     private Long parentId;
     private Long operator = 10000L;
+    private Collection<Long> childrenIds;
 
     public CreateCategory createCategory(){
         checkCreateCategory();
@@ -43,6 +45,11 @@ public class CategoryCommand extends BaseCommand {
     public DeleteCategory deleteCategory(){
         checkDeleteCategory();
         return new DeleteCategory(id, operator);
+    }
+
+    public UpdateChildren updateChildren(){
+        checkUpdateChildren();
+        return new UpdateChildren(id, childrenIds, operator);
     }
 
     private void checkCreateCategory(){
@@ -70,6 +77,10 @@ public class CategoryCommand extends BaseCommand {
         if (Objects.isNull(parentId)){
             throw new IllegalArgumentException("必须指定父分类");
         }
+    }
+
+    private void checkUpdateChildren(){
+        checkId();
     }
 
     private void checkDeleteCategory(){

@@ -33,7 +33,7 @@ public class CategoryDeleted extends CategoryEvent {
         Map<String, Object> map = new HashMap<>();
         map.put("id", category.getId());
         try {
-            this.data = SerializeUtil.mapToString(map);
+            data = SerializeUtil.mapToString(map);
         } catch (JsonProcessingException e) {
             throw TactProductException.jsonException(e);
         }

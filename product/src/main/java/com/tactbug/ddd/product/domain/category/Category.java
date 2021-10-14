@@ -10,6 +10,7 @@ import com.tactbug.ddd.common.utils.SerializeUtil;
 import com.tactbug.ddd.product.domain.category.command.*;
 import com.tactbug.ddd.product.domain.category.event.*;
 import com.tactbug.ddd.product.assist.exception.TactProductException;
+import com.tactbug.ddd.product.service.category.CategoryService;
 import lombok.Getter;
 
 import java.util.*;
@@ -27,8 +28,8 @@ public class Category extends BaseDomain {
     private String remark;
     private Long parentId;
 
-    private List<Long> childrenIds;
-    private List<Long> brandIds;
+    private Set<Long> childrenIds;
+    private Set<Long> brandIds;
 
     private Category(Long id) {
         super(id);
@@ -84,6 +85,21 @@ public class Category extends BaseDomain {
         update();
         check();
         return new CategoryParentChanged(eventId, this, EventType.UPDATED, changeParent.operator());
+    }
+
+    public List<CategoryEvent> updateChildrenIds(UpdateChildren updateChildren, IdUtil eventIdUtil, Collection<Category> children){
+        List<CategoryEvent> events = new ArrayList<>();
+        childrenIds = new HashSet<>(updateChildren.childrenIds());
+        update();
+        check();
+        events.add(new CategoryChildrenUpdated(eventIdUtil.getId(), this, EventType.UPDATED, updateChildren.operator()));
+
+        children.forEach(c -> {
+            CategoryParentChanged categoryParentChanged = c.changeParent(eventIdUtil.getId(), new ChangeParent(c.getId(), this.id, updateChildren.operator()));
+            events.add(categoryParentChanged);
+        });
+
+        return events;
     }
 
     public List<CategoryEvent> update(CategoryCommand categoryCommand, IdUtil eventIdUtil){
@@ -167,12 +183,12 @@ public class Category extends BaseDomain {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Category category = (Category) o;
-        return name.equals(category.name) && parentId.equals(category.parentId);
+        return name.equals(category.name);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, parentId);
+        return Objects.hash(name);
     }
 
     @Override

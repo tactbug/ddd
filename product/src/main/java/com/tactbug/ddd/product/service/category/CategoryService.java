@@ -4,10 +4,10 @@ import com.tactbug.ddd.common.utils.IdUtil;
 import com.tactbug.ddd.product.TactProductApplication;
 import com.tactbug.ddd.product.assist.exception.TactProductException;
 import com.tactbug.ddd.product.domain.category.Category;
-import com.tactbug.ddd.product.domain.category.event.CategoryEvent;
 import com.tactbug.ddd.product.domain.category.command.CategoryCommand;
 import com.tactbug.ddd.product.domain.category.command.CreateCategory;
 import com.tactbug.ddd.product.domain.category.event.CategoryDeleted;
+import com.tactbug.ddd.product.domain.category.event.CategoryEvent;
 import com.tactbug.ddd.product.outbound.repository.jpa.category.CategoryRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -69,4 +69,5 @@ public class CategoryService {
     public Optional<Category> getById(Long id){
         return categoryRepository.getOneById(id);
     }
+
 }

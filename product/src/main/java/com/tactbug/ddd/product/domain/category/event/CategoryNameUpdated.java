@@ -34,7 +34,7 @@ public class CategoryNameUpdated extends CategoryEvent {
         map.put("id", category.getId());
         map.put("name", category.getName());
         try {
-            this.data = SerializeUtil.mapToString(map);
+            data = SerializeUtil.mapToString(map);
         } catch (JsonProcessingException e) {
             throw TactProductException.jsonException(e);
         }

@@ -138,7 +138,6 @@ public class Brand extends BaseDomain {
         }
     }
 
-
     public void check(){
         super.check();
         if (Objects.isNull(name) || name.isBlank()){

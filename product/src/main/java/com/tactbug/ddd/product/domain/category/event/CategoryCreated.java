@@ -37,7 +37,7 @@ public class CategoryCreated extends CategoryEvent {
         map.put("remark", category.getRemark());
         map.put("parentId", category.getParentId());
         try {
-            this.data = SerializeUtil.mapToString(map);
+            data = SerializeUtil.mapToString(map);
         } catch (JsonProcessingException e) {
             throw TactProductException.jsonException(e);
         }
