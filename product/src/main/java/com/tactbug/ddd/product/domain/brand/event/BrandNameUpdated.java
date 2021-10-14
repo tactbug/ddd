@@ -1,11 +1,11 @@
-package com.tactbug.ddd.product.domain.category.event;
+package com.tactbug.ddd.product.domain.brand.event;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.tactbug.ddd.common.entity.EventType;
 import com.tactbug.ddd.common.utils.SerializeUtil;
-import com.tactbug.ddd.product.domain.category.Category;
 import com.tactbug.ddd.product.assist.exception.TactProductException;
+import com.tactbug.ddd.product.domain.brand.Brand;
 
 import javax.persistence.Entity;
 import java.util.HashMap;
@@ -15,24 +15,23 @@ import java.util.Objects;
 /**
  * @Author tactbug
  * @Email tactbug@Gmail.com
- * @Time 2021/10/3 21:41
+ * @Time 2021/10/13 22:04
  */
 @Entity
-public class RemarkUpdated extends CategoryEvent {
-    public RemarkUpdated(Long id, Category category, EventType eventType, Long operator) {
-        super(id, category, eventType, operator);
-        assembleData(category);
+public class BrandNameUpdated extends BrandEvent{
+    public BrandNameUpdated(Long id, Brand brand, EventType eventType, Long operator){
+        super(id, brand, eventType, operator);
+        assembleData(brand);
         checkData();
     }
 
-    public RemarkUpdated() {
-        super();
+    public BrandNameUpdated() {
     }
 
-    public void assembleData(Category category){
+    private void assembleData(Brand brand){
         Map<String, Object> map = new HashMap<>();
-        map.put("id", category.getId());
-        map.put("remark", category.getRemark());
+        map.put("id", brand.getId());
+        map.put("name", brand.getName());
         try {
             this.data = SerializeUtil.mapToString(map);
         } catch (JsonProcessingException e) {
@@ -40,7 +39,7 @@ public class RemarkUpdated extends CategoryEvent {
         }
     }
 
-    private void checkData(){
+    public void checkData(){
         super.check();
         Map<String, Object> data;
         try {
@@ -50,10 +49,10 @@ public class RemarkUpdated extends CategoryEvent {
             throw TactProductException.jsonException(e);
         }
         if (Objects.isNull(data.get("id")) || !SerializeUtil.isNumber(data.get("id").toString())){
-            throw new IllegalStateException("商品分类溯源事件[" + getId() + "]聚合ID状态异常");
+            throw new IllegalStateException("品牌溯源事件[" + getId() + "]聚合ID状态异常");
         }
-        if (Objects.isNull(data.get("remark"))){
-            data.put("remark", "");
+        if (Objects.isNull(data.get("name")) || data.get("name").toString().isBlank()){
+            throw new IllegalStateException("品牌溯源事件[" + getId() + "]聚合名称不能为空");
         }
     }
 }

@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -38,6 +39,9 @@ public class CategoryRepository {
         if (isDelete(id)){
             throw TactProductException.resourceOperateError("分类[" + id + "]已被删除");
         }
+        if (!isExists(id, null)){
+            throw TactProductException.resourceOperateError("分类[" + id + "]不存在");
+        }
         Category snapshot = getSnapshot(id).orElse(new Category());
         List<CategoryEvent> events = eventRepository.findAllByDomainIdAndDomainVersionGreaterThanOrderByDomainVersionAsc(id, snapshot.getVersion());
         Category category = Category.replay(events, snapshot);
@@ -46,7 +50,7 @@ public class CategoryRepository {
     }
 
     public void create(Category category, Long operator){
-        if (isExists(category)){
+        if (isExists(category.getId(), category)){
             throw TactProductException.resourceOperateError("分类[" + category + "]已经存在");
         }
         category.check();
@@ -57,11 +61,11 @@ public class CategoryRepository {
     }
 
     public void update(Category category, List<CategoryEvent> events){
-        if (!isExists(category)){
-            throw TactProductException.resourceOperateError("分类[" + category + "]不存在");
-        }
         if (isDelete(category.getId())){
             throw TactProductException.resourceOperateError("分类[" + category + "]已被删除");
+        }
+        if (!isExists(category.getId(), category)){
+            throw TactProductException.resourceOperateError("分类[" + category + "]不存在");
         }
         checkEvents(category);
         events = events.stream().sorted().collect(Collectors.toList());
@@ -72,7 +76,7 @@ public class CategoryRepository {
         if (isDelete(category.getId())){
             return;
         }
-        if (!isExists(category)){
+        if (!isExists(category.getId(), category)){
             throw TactProductException.resourceOperateError("分类[" + category + "]不存在");
         }
         category.check();
@@ -82,21 +86,21 @@ public class CategoryRepository {
     }
 
     private Optional<Category> getSnapshot(Long id){
-        return snapshotRepository.findByIdAndDelFlagIsFalse(id);
+        return snapshotRepository.findById(id);
     }
 
     private boolean isDelete(Long id){
         return eventRepository.existsByDomainIdAndEventType(id, EventType.DELETED);
     }
 
-    private boolean isExists(Category category){
-        if (!eventRepository.existsByDomainId(category.getId())){
+    private boolean isExists(Long id, Category category){
+        if (!eventRepository.existsByDomainId(id)){
             return false;
         }
-        if (eventRepository.existsByDomainIdAndEventType(category.getId(), EventType.DELETED)){
+        if (eventRepository.existsByDomainIdAndEventType(id, EventType.DELETED)){
             return false;
         }
-        if (eventRepository.existsByCategoryNameAndEventType(category.getName(), EventType.DELETED)){
+        if (Objects.nonNull(category) && eventRepository.existsByCategoryNameAndEventType(category.getName(), EventType.DELETED)){
             return false;
         }
         return true;

@@ -4,7 +4,6 @@ import com.tactbug.ddd.common.entity.BaseCommand;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import java.util.List;
 import java.util.Objects;
 
 @Data
@@ -13,7 +12,6 @@ public class BrandCommand extends BaseCommand {
 
     private String name;
     private String remark;
-    private List<Long> categoryIds;
     private Long operator = 10000L;
 
     public CreateBrand createBrand(){

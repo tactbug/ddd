@@ -10,9 +10,6 @@ import com.tactbug.ddd.common.utils.SerializeUtil;
 import com.tactbug.ddd.product.assist.exception.TactProductException;
 import com.tactbug.ddd.product.domain.brand.command.*;
 import com.tactbug.ddd.product.domain.brand.event.*;
-import com.tactbug.ddd.product.domain.category.Category;
-import com.tactbug.ddd.product.domain.category.command.UpdateRemark;
-import com.tactbug.ddd.product.domain.category.event.CategoryEvent;
 import lombok.Getter;
 
 import java.util.*;
@@ -61,18 +58,18 @@ public class Brand extends BaseDomain {
         return doReplay(snapshot, sortedEvents);
     }
 
-    public NameUpdated updateName(Long eventId, UpdateBrandName updateBrandName){
+    public BrandNameUpdated updateName(Long eventId, UpdateBrandName updateBrandName){
         name = updateBrandName.name();
         update();
         check();
-        return new NameUpdated(eventId, this, EventType.UPDATED, updateBrandName.operator());
+        return new BrandNameUpdated(eventId, this, EventType.UPDATED, updateBrandName.operator());
     }
 
-    public RemarkUpdated updateRemark(Long eventId, UpdateBrandRemark updateBrandRemark){
+    public BrandRemarkUpdated updateRemark(Long eventId, UpdateBrandRemark updateBrandRemark){
         remark = updateBrandRemark.remark();
         update();
         check();
-        return new RemarkUpdated(eventId, this, EventType.UPDATED, updateBrandRemark.operator());
+        return new BrandRemarkUpdated(eventId, this, EventType.UPDATED, updateBrandRemark.operator());
     }
 
     public BrandDeleted deleteBrand(Long eventId, DeleteBrand deleteBrand){

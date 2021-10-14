@@ -18,14 +18,14 @@ import java.util.Objects;
  * @Time 2021/10/13 22:05
  */
 @Entity
-public class RemarkUpdated extends BrandEvent{
-    public RemarkUpdated(Long id, Brand brand, EventType eventType, Long operator){
+public class BrandRemarkUpdated extends BrandEvent{
+    public BrandRemarkUpdated(Long id, Brand brand, EventType eventType, Long operator){
         super(id, brand, eventType, operator);
         assembleData(brand);
         checkData();
     }
 
-    public RemarkUpdated() {
+    public BrandRemarkUpdated() {
         super();
     }
 

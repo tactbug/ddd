@@ -65,25 +65,25 @@ public class Category extends BaseDomain {
         return new CategoryCreated(eventId, this, EventType.CREATED, operator);
     }
 
-    public NameUpdated updateName(Long eventId, UpdateName updateName) {
+    public CategoryNameUpdated updateName(Long eventId, UpdateName updateName) {
         this.name = updateName.name();
         update();
         check();
-        return new NameUpdated(eventId, this, EventType.UPDATED, updateName.operator());
+        return new CategoryNameUpdated(eventId, this, EventType.UPDATED, updateName.operator());
     }
 
-    public RemarkUpdated updateRemark(Long eventId, UpdateRemark updateRemark){
+    public CategoryRemarkUpdated updateRemark(Long eventId, UpdateRemark updateRemark){
         this.remark = updateRemark.remark();
         update();
         check();
-        return new RemarkUpdated(eventId, this, EventType.UPDATED, updateRemark.operator());
+        return new CategoryRemarkUpdated(eventId, this, EventType.UPDATED, updateRemark.operator());
     }
 
-    public ParentChanged changeParent(Long eventId, ChangeParent changeParent) {
+    public CategoryParentChanged changeParent(Long eventId, ChangeParent changeParent) {
         this.parentId = changeParent.parentId();
         update();
         check();
-        return new ParentChanged(eventId, this, EventType.UPDATED, changeParent.operator());
+        return new CategoryParentChanged(eventId, this, EventType.UPDATED, changeParent.operator());
     }
 
     public List<CategoryEvent> update(CategoryCommand categoryCommand, IdUtil eventIdUtil){

@@ -15,24 +15,24 @@ import java.util.Objects;
 /**
  * @Author tactbug
  * @Email tactbug@Gmail.com
- * @Time 2021/10/3 21:39
+ * @Time 2021/10/5 17:20
  */
 @Entity
-public class NameUpdated extends CategoryEvent {
-    public NameUpdated(Long id, Category category, EventType eventType, Long operator) {
+public class CategoryParentChanged extends CategoryEvent {
+    public CategoryParentChanged(Long id, Category category, EventType eventType, Long operator) {
         super(id, category, eventType, operator);
         assembleData(category);
         checkData();
     }
 
-    public NameUpdated() {
+    public CategoryParentChanged() {
         super();
     }
 
-    public void assembleData(Category category) {
+    public void assembleData(Category category){
         Map<String, Object> map = new HashMap<>();
         map.put("id", category.getId());
-        map.put("name", category.getName());
+        map.put("parentId", category.getParentId());
         try {
             this.data = SerializeUtil.mapToString(map);
         } catch (JsonProcessingException e) {
@@ -52,8 +52,8 @@ public class NameUpdated extends CategoryEvent {
         if (Objects.isNull(data.get("id")) || !SerializeUtil.isNumber(data.get("id").toString())){
             throw new IllegalStateException("商品分类溯源事件[" + getId() + "]聚合ID状态异常");
         }
-        if (Objects.isNull(data.get("name")) || data.get("name").toString().isBlank()){
-            throw new IllegalStateException("商品分类溯源事件[" + getId() + "]聚合名称不能为空");
+        if (Objects.isNull(data.get("parentId")) || !SerializeUtil.isNumber(data.get("parentId").toString())){
+            throw new IllegalStateException("商品分类溯源事件[" + getId() + "]聚合父分类ID状态异常");
         }
     }
 

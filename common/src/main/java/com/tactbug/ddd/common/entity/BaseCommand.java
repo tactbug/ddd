@@ -15,4 +15,12 @@ public class BaseCommand {
             throw new IllegalArgumentException("id不能为空");
         }
     }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 }
