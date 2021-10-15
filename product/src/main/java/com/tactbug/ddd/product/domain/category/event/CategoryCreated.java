@@ -20,8 +20,8 @@ import java.util.Objects;
 @Entity
 public class CategoryCreated extends CategoryEvent {
 
-    public CategoryCreated(Long id, Category category, EventType eventType, Long operator) {
-        super(id, category, eventType, operator);
+    public CategoryCreated(Long id, Category category, Long operator) {
+        super(id, category, operator);
         assembleData(category);
         checkData();
     }

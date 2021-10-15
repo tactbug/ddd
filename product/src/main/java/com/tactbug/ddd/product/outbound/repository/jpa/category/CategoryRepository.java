@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -34,20 +35,6 @@ public class CategoryRepository {
     private CategorySnapshotRepository snapshotRepository;
     @Resource
     private CategoryEventRepository eventRepository;
-
-    public Optional<Category> getOneById(Long id){
-        if (isDelete(id)){
-            throw TactProductException.resourceOperateError("分类[" + id + "]已被删除");
-        }
-        if (!isExists(id, null)){
-            throw TactProductException.resourceOperateError("分类[" + id + "]不存在");
-        }
-        Category snapshot = getSnapshot(id).orElse(new Category());
-        List<CategoryEvent> events = eventRepository.findAllByDomainIdAndDomainVersionGreaterThanOrderByDomainVersionAsc(id, snapshot.getVersion());
-        Category category = Category.replay(events, snapshot);
-        category.check();
-        return Optional.of(category);
-    }
 
     public void create(Category category, Long operator){
         if (isExists(category.getId(), category)){
@@ -83,6 +70,24 @@ public class CategoryRepository {
         checkEvents(category);
         snapshotRepository.save(category);
         eventRepository.save(categoryDeleted);
+    }
+
+    public Optional<Category> getOne(Long id){
+        if (isDelete(id)){
+            throw TactProductException.resourceOperateError("分类[" + id + "]已被删除");
+        }
+        if (!isExists(id, null)){
+            throw TactProductException.resourceOperateError("分类[" + id + "]不存在");
+        }
+        Category snapshot = getSnapshot(id).orElse(new Category());
+        List<CategoryEvent> events = eventRepository.findAllByDomainIdAndDomainVersionGreaterThanOrderByDomainVersionAsc(id, snapshot.getVersion());
+        Category category = Category.replay(events, snapshot);
+        category.check();
+        return Optional.of(category);
+    }
+
+    public List<Category> getBatch(Collection<Long> ids){
+        ids.forEach();
     }
 
     private Optional<Category> getSnapshot(Long id){

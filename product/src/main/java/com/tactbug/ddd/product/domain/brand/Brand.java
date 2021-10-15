@@ -99,7 +99,7 @@ public class Brand extends BaseDomain {
                             "current[" + current.getId() + "]版本[" + current.getDomainVersion() + "], " +
                             "next[" + next.getId() + "]版本[" + next.getDomainVersion() +"]");
                 }
-                if (current.getEventType().equals(EventType.DELETED)){
+                if (current instanceof BrandDeleted){
                     throw new IllegalStateException("溯源删除事件[" + current.getId() + "]后不能有后续事件");
                 }
             }

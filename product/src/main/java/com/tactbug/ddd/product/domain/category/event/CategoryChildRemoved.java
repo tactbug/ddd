@@ -4,35 +4,30 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.tactbug.ddd.common.entity.EventType;
 import com.tactbug.ddd.common.utils.SerializeUtil;
-import com.tactbug.ddd.product.domain.category.Category;
 import com.tactbug.ddd.product.assist.exception.TactProductException;
+import com.tactbug.ddd.product.domain.category.Category;
 
 import javax.persistence.Entity;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-/**
- * @Author tactbug
- * @Email tactbug@Gmail.com
- * @Time 2021/10/3 21:41
- */
 @Entity
-public class CategoryRemarkUpdated extends CategoryEvent {
-    public CategoryRemarkUpdated(Long id, Category category, Long operator) {
+public class CategoryChildRemoved extends CategoryEvent{
+    public CategoryChildRemoved(Long id, Category category, Long childId, Long operator) {
         super(id, category, operator);
-        assembleData(category);
-        checkData();
+        assembleData(category, childId);
+        checkData(category);
     }
 
-    public CategoryRemarkUpdated() {
+    public CategoryChildRemoved() {
         super();
     }
 
-    public void assembleData(Category category){
+    public void assembleData(Category category, Long childId){
         Map<String, Object> map = new HashMap<>();
         map.put("id", category.getId());
-        map.put("remark", category.getRemark());
+        map.put("childId", childId);
         try {
             data = SerializeUtil.mapToString(map);
         } catch (JsonProcessingException e) {
@@ -40,7 +35,7 @@ public class CategoryRemarkUpdated extends CategoryEvent {
         }
     }
 
-    private void checkData(){
+    private void checkData(Category category){
         super.check();
         Map<String, Object> data;
         try {
@@ -52,8 +47,10 @@ public class CategoryRemarkUpdated extends CategoryEvent {
         if (Objects.isNull(data.get("id")) || !SerializeUtil.isNumber(data.get("id").toString())){
             throw new IllegalStateException("商品分类溯源事件[" + getId() + "]聚合ID状态异常");
         }
-        if (Objects.isNull(data.get("remark"))){
-            data.put("remark", "");
+        if (Objects.isNull(data.get("childId"))
+                || !SerializeUtil.isNumber(data.get("childId").toString())
+                || category.getChildrenIds().contains(Long.valueOf(data.get("parentId").toString()))){
+            throw new IllegalStateException("商品分类溯源事件" + category + "子分类数据异常");
         }
     }
 }

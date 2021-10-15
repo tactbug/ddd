@@ -19,8 +19,8 @@ import java.util.Objects;
  */
 @Entity
 public class CategoryParentChanged extends CategoryEvent {
-    public CategoryParentChanged(Long id, Category category, EventType eventType, Long operator) {
-        super(id, category, eventType, operator);
+    public CategoryParentChanged(Long id, Category category, Long operator) {
+        super(id, category, operator);
         assembleData(category);
         checkData();
     }

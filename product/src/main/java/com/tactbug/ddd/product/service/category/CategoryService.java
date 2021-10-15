@@ -36,7 +36,7 @@ public class CategoryService {
     public Category createCategory(CreateCategory createCategory){
         Long parentId = Objects.isNull(createCategory.parentId()) ? 0L : createCategory.parentId();
         if (!parentId.equals(0L)){
-            categoryRepository.getOneById(parentId)
+            categoryRepository.getOne(parentId)
                     .orElseThrow(() -> TactProductException.resourceOperateError("父分类[" + parentId + "]不存在"));
         }
         Category category = Category.generate(CATEGORY_ID_UTIL.getId(), createCategory);
@@ -45,9 +45,9 @@ public class CategoryService {
     }
 
     public Category update(CategoryCommand categoryCommand){
-        Category category = categoryRepository.getOneById(categoryCommand.getId())
+        Category category = categoryRepository.getOne(categoryCommand.getId())
                 .orElseThrow(() -> TactProductException.resourceOperateError("分类[" + categoryCommand.getId() + "]不存在"));
-        List<CategoryEvent> events = category.update(categoryCommand, CATEGORY_ID_UTIL);
+        List<CategoryEvent> events = category.update(categoryCommand, CATEGORY_ID_UTIL, categoryRepository);
         if (!events.isEmpty()){
             categoryRepository.update(category, events);
         }
@@ -55,7 +55,7 @@ public class CategoryService {
     }
 
     public Optional<Category> delete(CategoryCommand categoryCommand){
-        Optional<Category> optional = categoryRepository.getOneById(categoryCommand.getId())
+        Optional<Category> optional = categoryRepository.getOne(categoryCommand.getId())
                 .or(Optional::empty);
         if (optional.isPresent()){
             Category category = optional.get();
@@ -67,7 +67,7 @@ public class CategoryService {
     }
 
     public Optional<Category> getById(Long id){
-        return categoryRepository.getOneById(id);
+        return categoryRepository.getOne(id);
     }
 
 }

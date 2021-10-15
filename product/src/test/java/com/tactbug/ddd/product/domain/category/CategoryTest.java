@@ -43,14 +43,11 @@ class CategoryTest {
         CategoryEvent create = category.createCategory(createId, createCategory.operator());
         categoryCommand.setId(category.getId());
 
-        Long updateNameId = CATEGORY_ID_UTIL.getId();
-        CategoryEvent updateName = category.updateName(updateNameId, categoryCommand.updateName());
+        CategoryEvent updateName = category.updateName(CATEGORY_ID_UTIL, categoryCommand.updateName());
 
-        Long updateRemarkId = CATEGORY_ID_UTIL.getId();
-        CategoryEvent updateRemark = category.updateRemark(updateRemarkId, categoryCommand.updateRemark());
+        CategoryEvent updateRemark = category.updateRemark(CATEGORY_ID_UTIL, categoryCommand.updateRemark());
 
-        Long changeParentId = CATEGORY_ID_UTIL.getId();
-        CategoryEvent changeParent = category.changeParent(changeParentId, categoryCommand.changeParent());
+        CategoryEvent changeParent = category.changeParent(CATEGORY_ID_UTIL, categoryCommand.changeParent());
 
         events.add(create);
         events.add(updateName);

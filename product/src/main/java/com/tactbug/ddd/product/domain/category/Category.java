@@ -7,10 +7,10 @@ import com.tactbug.ddd.common.entity.Event;
 import com.tactbug.ddd.common.entity.EventType;
 import com.tactbug.ddd.common.utils.IdUtil;
 import com.tactbug.ddd.common.utils.SerializeUtil;
+import com.tactbug.ddd.product.assist.exception.TactProductException;
 import com.tactbug.ddd.product.domain.category.command.*;
 import com.tactbug.ddd.product.domain.category.event.*;
-import com.tactbug.ddd.product.assist.exception.TactProductException;
-import com.tactbug.ddd.product.service.category.CategoryService;
+import com.tactbug.ddd.product.outbound.repository.jpa.category.CategoryRepository;
 import lombok.Getter;
 
 import java.util.*;
@@ -63,55 +63,73 @@ public class Category extends BaseDomain {
 
     public CategoryCreated createCategory(Long eventId, Long operator) {
         check();
-        return new CategoryCreated(eventId, this, EventType.CREATED, operator);
+        return new CategoryCreated(eventId, this, operator);
     }
 
-    public CategoryNameUpdated updateName(Long eventId, UpdateName updateName) {
-        this.name = updateName.name();
-        update();
-        check();
-        return new CategoryNameUpdated(eventId, this, EventType.UPDATED, updateName.operator());
+    public CategoryNameUpdated updateName(IdUtil idUtil, UpdateName updateName) {
+        if (!updateName.name().equals(name)){
+            name = updateName.name();
+            update();
+            check();
+            return new CategoryNameUpdated(idUtil.getId(), this, updateName.operator());
+        }
+        return null;
     }
 
-    public CategoryRemarkUpdated updateRemark(Long eventId, UpdateRemark updateRemark){
-        this.remark = updateRemark.remark();
-        update();
-        check();
-        return new CategoryRemarkUpdated(eventId, this, EventType.UPDATED, updateRemark.operator());
+    public CategoryRemarkUpdated updateRemark(IdUtil idUtil, UpdateRemark updateRemark){
+        if (!updateRemark.remark().equals(remark)){
+            this.remark = updateRemark.remark();
+            update();
+            check();
+            return new CategoryRemarkUpdated(idUtil.getId(), this, updateRemark.operator());
+        }
+        return null;
     }
 
-    public CategoryParentChanged changeParent(Long eventId, ChangeParent changeParent) {
-        this.parentId = changeParent.parentId();
-        update();
-        check();
-        return new CategoryParentChanged(eventId, this, EventType.UPDATED, changeParent.operator());
-    }
-
-    public List<CategoryEvent> updateChildrenIds(UpdateChildren updateChildren, IdUtil eventIdUtil, Collection<Category> children){
+    public List<CategoryEvent> changeParent(IdUtil idUtil, Category parent, Long operator) {
         List<CategoryEvent> events = new ArrayList<>();
-        childrenIds = new HashSet<>(updateChildren.childrenIds());
+        if (parent.getId().equals(parentId)){
+            return events;
+        };
+        CategoryChildRemoved categoryChildRemoved = parent.removeChild(idUtil, this, operator);
+        events.add(categoryChildRemoved);
+
+        parentId = changeParent.parentId();
         update();
         check();
-        events.add(new CategoryChildrenUpdated(eventIdUtil.getId(), this, EventType.UPDATED, updateChildren.operator()));
-
-        children.forEach(c -> {
-            CategoryParentChanged categoryParentChanged = c.changeParent(eventIdUtil.getId(), new ChangeParent(c.getId(), this.id, updateChildren.operator()));
-            events.add(categoryParentChanged);
-        });
-
+        CategoryParentChanged categoryParentChanged = new CategoryParentChanged(idUtil.getId(), this, changeParent.operator());
+        events.add(categoryParentChanged);
         return events;
     }
 
-    public List<CategoryEvent> update(CategoryCommand categoryCommand, IdUtil eventIdUtil){
+    public List<CategoryEvent> updateChildrenIds(IdUtil eventIdUtil, UpdateChildren updateChildren, Collection<Category> children){
+        Set<Long> childrenIds = children.stream().map(Category::getId).collect(Collectors.toSet());
+        List<CategoryEvent> events = new ArrayList<>();
+
+        if (childrenIds.equals(this.childrenIds)){
+            return events;
+        }
+
+        children.forEach(c -> {
+            c.changeParent(eventIdUtil, )
+        });
+        return events;
+    }
+
+    public List<CategoryEvent> update(CategoryCommand categoryCommand, IdUtil eventIdUtil, CategoryRepository categoryRepository){
         List<CategoryEvent> events = new ArrayList<>();
         if (Objects.nonNull(categoryCommand.getName()) && !categoryCommand.getName().equals(name)){
-            events.add(updateName(eventIdUtil.getId(), categoryCommand.updateName()));
+            events.add(updateName(eventIdUtil, categoryCommand.updateName()));
         }
         if (Objects.nonNull(categoryCommand.getRemark()) && !categoryCommand.getRemark().equals(remark)){
-            events.add(updateRemark(eventIdUtil.getId(), categoryCommand.updateRemark()));
+            events.add(updateRemark(eventIdUtil, categoryCommand.updateRemark()));
         }
         if (Objects.nonNull(categoryCommand.getParentId()) && !categoryCommand.getParentId().equals(parentId)){
-            events.add(changeParent(eventIdUtil.getId(), categoryCommand.changeParent()));
+            events.add(changeParent(eventIdUtil, categoryCommand.changeParent()));
+        }
+        if (Objects.nonNull(categoryCommand.getChildrenIds())){
+
+
         }
         check();
         return events;
@@ -119,7 +137,17 @@ public class Category extends BaseDomain {
 
     public CategoryDeleted delete(Long eventId, DeleteCategory deleteCategory){
         update();
-        return new CategoryDeleted(eventId, this, EventType.DELETED, deleteCategory.operator());
+        return new CategoryDeleted(eventId, this, deleteCategory.operator());
+    }
+
+    private CategoryChildRemoved removeChild(IdUtil idUtil, Category child, Long operator){
+        if (!child.parentId.equals(id) || !childrenIds.contains(child.id)){
+            throw new IllegalStateException("父子分类不匹配[" + this + "], [" + child +"]");
+        }
+        childrenIds.remove(child.getId());
+        update();
+        check();
+        return new CategoryChildRemoved(idUtil.getId(), this, child.getId(), operator);
     }
 
     private static Category doReplay(Category snapshot, List<Event<Category>> events) {
@@ -132,7 +160,7 @@ public class Category extends BaseDomain {
                             "current[" + current.getId() + "]版本[" + current.getDomainVersion() + "], " +
                             "next[" + next.getId() + "]版本[" + next.getDomainVersion() +"]");
                 }
-                if (current.getEventType().equals(EventType.DELETED)){
+                if (current instanceof CategoryDeleted){
                     throw new IllegalStateException("溯源删除事件[" + current.getId() + "]后不能有后续事件");
                 }
             }

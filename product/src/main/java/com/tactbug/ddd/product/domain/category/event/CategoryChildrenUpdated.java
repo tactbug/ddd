@@ -14,8 +14,8 @@ import java.util.Objects;
 
 @Entity
 public class CategoryChildrenUpdated extends CategoryEvent{
-    public CategoryChildrenUpdated(Long id, Category category, EventType eventType, Long operator){
-        super(id, category, EventType.UPDATED, operator);
+    public CategoryChildrenUpdated(Long id, Category category, Long operator){
+        super(id, category, operator);
 
     }
 

@@ -19,8 +19,8 @@ public class CategoryEvent extends Event<Category> {
 
     private String categoryName;
 
-    public CategoryEvent(Long id, Category category, EventType eventType, Long operator){
-        super(id, category, eventType, operator);
+    public CategoryEvent(Long id, Category category, Long operator){
+        super(id, category, operator);
         this.categoryName = category.getName();
     }
 

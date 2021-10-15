@@ -19,8 +19,8 @@ import java.util.Objects;
  */
 @Entity
 public class CategoryDeleted extends CategoryEvent {
-    public CategoryDeleted(Long id, Category category, EventType eventType, Long operator) {
-        super(id, category, eventType, operator);
+    public CategoryDeleted(Long id, Category category, Long operator) {
+        super(id, category, operator);
         assembleData(category);
         checkData();
     }
