@@ -11,8 +11,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * @Author tactbug
@@ -46,5 +45,18 @@ public class CategorySnapshotRepository {
         } catch (JsonProcessingException e) {
             throw TactProductException.jsonException(e);
         }
+    }
+
+    public List<Category> findByIds(Collection<Long> ids){
+        List<Object> result = redisTemplate.opsForHash().multiGet(Category.class, new ArrayList<>(ids));
+        if (!result.isEmpty()){
+            try {
+                return SerializeUtil.jsonToObject(result.toString(), new TypeReference<>() {
+                });
+            } catch (JsonProcessingException e) {
+                throw TactProductException.jsonException(e);
+            }
+        }
+        return Collections.emptyList();
     }
 }

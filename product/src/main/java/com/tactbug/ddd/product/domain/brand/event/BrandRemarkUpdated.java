@@ -19,8 +19,8 @@ import java.util.Objects;
  */
 @Entity
 public class BrandRemarkUpdated extends BrandEvent{
-    public BrandRemarkUpdated(Long id, Brand brand, EventType eventType, Long operator){
-        super(id, brand, eventType, operator);
+    public BrandRemarkUpdated(Long id, Brand brand, Long operator){
+        super(id, brand, operator);
         assembleData(brand);
         checkData();
     }

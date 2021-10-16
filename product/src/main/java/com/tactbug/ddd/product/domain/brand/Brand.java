@@ -41,7 +41,7 @@ public class Brand extends BaseDomain {
 
     public BrandCreated createBrand(Long eventId, Long operator){
         check();
-        return new BrandCreated(eventId, this, EventType.CREATED, operator);
+        return new BrandCreated(eventId, this, operator);
     }
 
     public static Brand replay(Collection<BrandEvent> events, Brand snapshot) {
@@ -62,20 +62,20 @@ public class Brand extends BaseDomain {
         name = updateBrandName.name();
         update();
         check();
-        return new BrandNameUpdated(eventId, this, EventType.UPDATED, updateBrandName.operator());
+        return new BrandNameUpdated(eventId, this, updateBrandName.operator());
     }
 
     public BrandRemarkUpdated updateRemark(Long eventId, UpdateBrandRemark updateBrandRemark){
         remark = updateBrandRemark.remark();
         update();
         check();
-        return new BrandRemarkUpdated(eventId, this, EventType.UPDATED, updateBrandRemark.operator());
+        return new BrandRemarkUpdated(eventId, this, updateBrandRemark.operator());
     }
 
     public BrandDeleted deleteBrand(Long eventId, DeleteBrand deleteBrand){
         update();
         check();
-        return new BrandDeleted(eventId, this, EventType.DELETED, deleteBrand.operator());
+        return new BrandDeleted(eventId, this, deleteBrand.operator());
     }
 
     public List<BrandEvent> update(IdUtil idUtil, BrandCommand brandCommand){

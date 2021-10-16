@@ -1,14 +1,12 @@
 package com.tactbug.ddd.product.domain.category.event;
 
+import com.tactbug.ddd.common.entity.BaseDomain;
 import com.tactbug.ddd.common.entity.Event;
 import com.tactbug.ddd.common.entity.EventType;
 import com.tactbug.ddd.product.domain.category.Category;
 import lombok.Data;
 
-import javax.persistence.Entity;
-import javax.persistence.Index;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
+import javax.persistence.*;
 
 @Entity
 @Table(name = "category_event",
@@ -18,10 +16,13 @@ import javax.persistence.UniqueConstraint;
 public class CategoryEvent extends Event<Category> {
 
     private String categoryName;
+    @Column(name = "type")
+    protected Class<? extends CategoryEvent> type;
 
     public CategoryEvent(Long id, Category category, Long operator){
         super(id, category, operator);
         this.categoryName = category.getName();
+        this.type = this.getClass();
     }
 
     public CategoryEvent() {

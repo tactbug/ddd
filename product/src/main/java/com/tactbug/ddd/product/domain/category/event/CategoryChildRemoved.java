@@ -27,7 +27,7 @@ public class CategoryChildRemoved extends CategoryEvent{
     public void assembleData(Category category, Long childId){
         Map<String, Object> map = new HashMap<>();
         map.put("id", category.getId());
-        map.put("childId", childId);
+        map.put("childrenIds", childId);
         try {
             data = SerializeUtil.mapToString(map);
         } catch (JsonProcessingException e) {

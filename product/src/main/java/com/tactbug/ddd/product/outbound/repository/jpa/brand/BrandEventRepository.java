@@ -10,7 +10,7 @@ import java.util.List;
 @Repository
 public interface BrandEventRepository extends JpaRepository<BrandEvent, Long> {
     List<BrandEvent> findAllByDomainIdAndDomainVersionGreaterThanOrderByDomainVersionAsc(Long domainId, Integer domainVersion);
-    boolean existsByDomainIdAndEventType(Long id, EventType eventType);
+    boolean existsByDomainIdAndType(Long domainId, Class<? extends BrandEvent> type);
     boolean existsByDomainId(Long id);
-    boolean existsByBrandNameAndEventType(String name, EventType eventType);
+    boolean existsByBrandNameAndType(String brandName, Class<? extends BrandEvent> type);
 }

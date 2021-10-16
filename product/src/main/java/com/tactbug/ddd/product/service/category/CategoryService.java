@@ -48,8 +48,9 @@ public class CategoryService {
         Category category = categoryRepository.getOne(categoryCommand.getId())
                 .orElseThrow(() -> TactProductException.resourceOperateError("分类[" + categoryCommand.getId() + "]不存在"));
         List<CategoryEvent> events = category.update(categoryCommand, CATEGORY_ID_UTIL, categoryRepository);
+        events.removeIf(Objects::isNull);
         if (!events.isEmpty()){
-            categoryRepository.update(category, events);
+            categoryRepository.update(events);
         }
         return category;
     }

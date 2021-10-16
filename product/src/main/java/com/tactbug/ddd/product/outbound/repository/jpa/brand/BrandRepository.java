@@ -82,17 +82,17 @@ public class BrandRepository {
     }
 
     private boolean isDelete(Long id){
-        return eventRepository.existsByDomainIdAndEventType(id, EventType.DELETED);
+        return eventRepository.existsByDomainIdAndType(id, BrandDeleted.class);
     }
 
     private boolean isExists(Long id, Brand brand){
         if (!eventRepository.existsByDomainId(id)){
             return false;
         }
-        if (eventRepository.existsByDomainIdAndEventType(id, EventType.DELETED)){
+        if (eventRepository.existsByDomainIdAndType(id, BrandDeleted.class)){
             return false;
         }
-        if (Objects.nonNull(brand) && eventRepository.existsByBrandNameAndEventType(brand.getName(), EventType.DELETED)){
+        if (Objects.nonNull(brand) && eventRepository.existsByBrandNameAndType(brand.getName(), BrandDeleted.class)){
             return false;
         }
         return true;

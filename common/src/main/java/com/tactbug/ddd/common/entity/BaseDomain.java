@@ -2,7 +2,6 @@ package com.tactbug.ddd.common.entity;
 
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
-import javax.persistence.Transient;
 import java.time.ZonedDateTime;
 import java.util.Objects;
 

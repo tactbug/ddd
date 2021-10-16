@@ -39,22 +39,18 @@ class CategoryTest {
 
         List<CategoryEvent> events = new ArrayList<>();
 
-        Long createId = CATEGORY_ID_UTIL.getId();
-        CategoryEvent create = category.createCategory(createId, createCategory.operator());
+        CategoryEvent create = category.createCategory(CATEGORY_ID_UTIL, createCategory.operator());
         categoryCommand.setId(category.getId());
 
         CategoryEvent updateName = category.updateName(CATEGORY_ID_UTIL, categoryCommand.updateName());
 
         CategoryEvent updateRemark = category.updateRemark(CATEGORY_ID_UTIL, categoryCommand.updateRemark());
 
-        CategoryEvent changeParent = category.changeParent(CATEGORY_ID_UTIL, categoryCommand.changeParent());
-
         events.add(create);
         events.add(updateName);
         events.add(updateRemark);
-        events.add(changeParent);
 
-        Category replay = Category.replay(events, null);
+        Category replay = Category.replay(null, events);
         assertEquals(category, replay);
     }
 }

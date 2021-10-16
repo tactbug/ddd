@@ -19,8 +19,8 @@ import java.util.Objects;
  */
 @Entity
 public class BrandDeleted extends BrandEvent{
-    public BrandDeleted(Long id, Brand brand, EventType eventType, Long operator){
-        super(id, brand, eventType, operator);
+    public BrandDeleted(Long id, Brand brand, Long operator){
+        super(id, brand, operator);
         assembleData(brand);
         checkData();
     }

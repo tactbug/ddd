@@ -2,6 +2,8 @@ package com.tactbug.ddd.common.entity;
 
 import javax.persistence.Column;
 import javax.persistence.MappedSuperclass;
+import javax.persistence.Transient;
+import java.time.ZonedDateTime;
 import java.util.Objects;
 
 /**
@@ -38,6 +40,9 @@ public class Event<T extends BaseDomain> extends BaseDomain {
 
     @Override
     public int compareTo(BaseDomain o) {
+        if (Objects.isNull(o)){
+            return -1;
+        }
         Event<? extends BaseDomain> other = (Event<? extends BaseDomain>) o;
         return this.getDomainVersion() - other.getDomainVersion();
     }
@@ -62,7 +67,6 @@ public class Event<T extends BaseDomain> extends BaseDomain {
         return domainVersion;
     }
 
-
     public Long getOperator() {
         return operator;
     }
@@ -70,4 +74,5 @@ public class Event<T extends BaseDomain> extends BaseDomain {
     public String getData() {
         return data;
     }
+
 }

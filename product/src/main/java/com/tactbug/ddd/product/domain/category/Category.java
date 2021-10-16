@@ -47,23 +47,26 @@ public class Category extends BaseDomain {
         return category;
     }
 
-    public static Category replay(Collection<CategoryEvent> events, Category snapshot) {
+    public static Category replay(Category snapshot, Collection<CategoryEvent> events) {
         if (Objects.isNull(snapshot)){
             snapshot = new Category();
         }
         if (events.isEmpty()){
             return snapshot;
         }
-        List<Event<Category>> sortedEvents = events.stream().sorted().collect(Collectors.toList());
+        events.removeIf(Objects::isNull);
+        List<CategoryEvent> sortedEvents = events.stream().sorted().collect(Collectors.toList());
         if (sortedEvents.get(0).getDomainVersion() - snapshot.getVersion() != 1){
             throw new IllegalStateException("快照版本[" + snapshot.getVersion() + "]跟溯源版本[" + sortedEvents.get(0).getDomainVersion() + "]不匹配");
         }
-        return doReplay(snapshot, sortedEvents);
+        Category category = doReplay(snapshot, sortedEvents);
+        category.check();
+        return category;
     }
 
-    public CategoryCreated createCategory(Long eventId, Long operator) {
+    public CategoryCreated createCategory(IdUtil idUtil, Long operator) {
         check();
-        return new CategoryCreated(eventId, this, operator);
+        return new CategoryCreated(idUtil.getId(), this, operator);
     }
 
     public CategoryNameUpdated updateName(IdUtil idUtil, UpdateName updateName) {
@@ -86,14 +89,19 @@ public class Category extends BaseDomain {
         return null;
     }
 
-    public List<CategoryEvent> changeParent(IdUtil idUtil, Category parent, Long operator) {
+    public List<CategoryEvent> changeParent(IdUtil idUtil, ChangeParent changeParent, CategoryRepository categoryRepository) {
         List<CategoryEvent> events = new ArrayList<>();
-        if (parent.getId().equals(parentId)){
+        if (changeParent.parentId().equals(parentId)){
             return events;
-        };
-        CategoryChildRemoved categoryChildRemoved = parent.removeChild(idUtil, this, operator);
-        events.add(categoryChildRemoved);
-
+        }
+        if (!changeParent.parentId().equals(0L)){
+            if (!parentId.equals(0L)){
+                Category parent = categoryRepository.getOne(parentId)
+                        .orElseThrow(() -> TactProductException.resourceOperateError("父分类[" + changeParent.parentId() + "]不存在"));
+                CategoryChildRemoved categoryChildRemoved = parent.removeChild(idUtil, this, changeParent.operator());
+                events.add(categoryChildRemoved);
+            }
+        }
         parentId = changeParent.parentId();
         update();
         check();
@@ -102,16 +110,21 @@ public class Category extends BaseDomain {
         return events;
     }
 
-    public List<CategoryEvent> updateChildrenIds(IdUtil eventIdUtil, UpdateChildren updateChildren, Collection<Category> children){
-        Set<Long> childrenIds = children.stream().map(Category::getId).collect(Collectors.toSet());
+    public List<CategoryEvent> updateChildrenIds(IdUtil eventIdUtil, UpdateChildren updateChildren, CategoryRepository categoryRepository){
         List<CategoryEvent> events = new ArrayList<>();
-
-        if (childrenIds.equals(this.childrenIds)){
+        if (childrenIds.equals(updateChildren.childrenIds())){
             return events;
         }
 
+        List<Category> children = categoryRepository.getBatch(updateChildren.childrenIds());
+
         children.forEach(c -> {
-            c.changeParent(eventIdUtil, )
+            CategoryCommand childChangeParent = new CategoryCommand();
+            childChangeParent.setId(c.id);
+            childChangeParent.setParentId(this.id);
+            childChangeParent.setOperator(updateChildren.operator());
+            List<CategoryEvent> childChangeParentEvents = c.changeParent(eventIdUtil, childChangeParent.changeParent(), categoryRepository);
+            events.addAll(childChangeParentEvents);
         });
         return events;
     }
@@ -125,11 +138,12 @@ public class Category extends BaseDomain {
             events.add(updateRemark(eventIdUtil, categoryCommand.updateRemark()));
         }
         if (Objects.nonNull(categoryCommand.getParentId()) && !categoryCommand.getParentId().equals(parentId)){
-            events.add(changeParent(eventIdUtil, categoryCommand.changeParent()));
+            ChangeParent changeParent = categoryCommand.changeParent();
+            events.addAll(changeParent(eventIdUtil,changeParent, categoryRepository));
         }
-        if (Objects.nonNull(categoryCommand.getChildrenIds())){
-
-
+        if (Objects.nonNull(categoryCommand.getChildrenIds()) && !categoryCommand.getChildrenIds().equals(childrenIds)){
+            UpdateChildren updateChildren = categoryCommand.updateChildren();
+            events.addAll(updateChildrenIds(eventIdUtil, updateChildren, categoryRepository));
         }
         check();
         return events;
@@ -150,7 +164,7 @@ public class Category extends BaseDomain {
         return new CategoryChildRemoved(idUtil.getId(), this, child.getId(), operator);
     }
 
-    private static Category doReplay(Category snapshot, List<Event<Category>> events) {
+    private static Category doReplay(Category snapshot, List<CategoryEvent> events) {
         for (int i = 0; i < events.size(); i++) {
             Event<Category> current = events.get(i);
             if (i < events.size() - 1){
@@ -166,7 +180,6 @@ public class Category extends BaseDomain {
             }
             snapshot.eventsReplay(events.get(i));
         }
-        snapshot.check();
         return snapshot;
     }
 
@@ -186,6 +199,7 @@ public class Category extends BaseDomain {
         replayName(data);
         replayRemark(data);
         replayParentId(data);
+        replayChildren(data);
     }
 
     private void replayName(Map<String, Object> data){
@@ -203,6 +217,18 @@ public class Category extends BaseDomain {
     private void replayParentId(Map<String, Object> data){
         if (data.containsKey("parentId")){
             this.parentId = Long.valueOf(data.get("parentId").toString());
+        }
+    }
+
+    private void replayChildren(Map<String, Object> data){
+        if (data.containsKey("childrenIds")){
+            String json = data.get("childrenIds").toString();
+            try {
+                childrenIds = SerializeUtil.jsonToObject(json, new TypeReference<>() {
+                });
+            } catch (JsonProcessingException e) {
+                throw TactProductException.jsonException(e);
+            }
         }
     }
 
