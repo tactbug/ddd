@@ -31,6 +31,8 @@ public class Category extends BaseDomain {
     private Set<Long> childrenIds;
     private Set<Long> brandIds;
 
+    private static final Long ROOT_CATEGORY = 0L;
+
     private Category(Long id) {
         super(id);
     }
@@ -64,7 +66,13 @@ public class Category extends BaseDomain {
         return category;
     }
 
-    public CategoryCreated createCategory(IdUtil idUtil, Long operator) {
+    public List<CategoryEvent> createCategory(IdUtil idUtil, CategoryRepository categoryRepository, Long operator) {
+        List<CategoryEvent> events = new ArrayList<>();
+        if (!parentId.equals(ROOT_CATEGORY)){
+            Category parent = categoryRepository.getOne(parentId)
+                    .orElseThrow(() -> TactProductException.resourceOperateError("当前父分类[" + parentId + "]不存在"));
+            events.add(parent.)
+        }
         check();
         return new CategoryCreated(idUtil.getId(), this, operator);
     }
@@ -94,8 +102,8 @@ public class Category extends BaseDomain {
         if (changeParent.parentId().equals(parentId)){
             return events;
         }
-        if (!changeParent.parentId().equals(0L)){
-            if (!parentId.equals(0L)){
+        if (!changeParent.parentId().equals(ROOT_CATEGORY)){
+            if (!parentId.equals(ROOT_CATEGORY)){
                 Category parent = categoryRepository.getOne(parentId)
                         .orElseThrow(() -> TactProductException.resourceOperateError("父分类[" + changeParent.parentId() + "]不存在"));
                 CategoryChildRemoved categoryChildRemoved = parent.removeChild(idUtil, this, changeParent.operator());
@@ -115,7 +123,6 @@ public class Category extends BaseDomain {
         if (childrenIds.equals(updateChildren.childrenIds())){
             return events;
         }
-
         List<Category> children = categoryRepository.getBatch(updateChildren.childrenIds());
 
         children.forEach(c -> {
@@ -153,6 +160,7 @@ public class Category extends BaseDomain {
         update();
         return new CategoryDeleted(eventId, this, deleteCategory.operator());
     }
+
 
     private CategoryChildRemoved removeChild(IdUtil idUtil, Category child, Long operator){
         if (!child.parentId.equals(id) || !childrenIds.contains(child.id)){

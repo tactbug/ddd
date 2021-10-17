@@ -2,7 +2,6 @@ package com.tactbug.ddd.product.domain.category.event;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.tactbug.ddd.common.entity.EventType;
 import com.tactbug.ddd.common.utils.SerializeUtil;
 import com.tactbug.ddd.product.assist.exception.TactProductException;
 import com.tactbug.ddd.product.domain.category.Category;
@@ -12,15 +11,20 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * @Author tactbug
+ * @Email tactbug@Gmail.com
+ * @Time 2021/10/17 19:46
+ */
 @Entity
-public class CategoryChildRemoved extends CategoryEvent{
-    public CategoryChildRemoved(Long id, Category category, Long childId, Long operator) {
+public class CategoryChildAdded extends CategoryEvent{
+    public CategoryChildAdded(Long id, Category category, Long childId, Long operator) {
         super(id, category, operator);
         assembleData(category, childId);
         checkData(category);
     }
 
-    public CategoryChildRemoved() {
+    public CategoryChildAdded() {
         super();
     }
 
@@ -49,7 +53,7 @@ public class CategoryChildRemoved extends CategoryEvent{
         }
         if (Objects.isNull(data.get("childId"))
                 || !SerializeUtil.isNumber(data.get("childId").toString())
-                || category.getChildrenIds().contains(Long.valueOf(data.get("childId").toString()))){
+                || !category.getChildrenIds().contains(Long.valueOf(data.get("childId").toString()))){
             throw new IllegalStateException("商品分类" + category + "子分类数据异常");
         }
     }
