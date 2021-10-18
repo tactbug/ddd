@@ -15,10 +15,10 @@ import java.util.List;
 @Repository
 public interface CategoryEventRepository extends JpaRepository<CategoryEvent, Long> {
     List<CategoryEvent> findAllByDomainIdAndDomainVersionGreaterThanOrderByDomainVersionAsc(Long domainId, Integer domainVersion);
+    boolean existsByDomainIdAndTypeNot(Long domainId, Class<? extends CategoryEvent> type);
     boolean existsByDomainIdAndType(Long domainId, Class<? extends CategoryEvent> type);
+    boolean existsAllByDomainIdInAndTypeNot(Collection<Long> domainId, Class<? extends CategoryEvent> type);
     boolean existsByDomainIdInAndType(Collection<Long> domainId, Class<? extends CategoryEvent> type);
-    boolean existsByDomainId(Long id);
-    boolean existsAllByDomainIdIn(Collection<Long> domainId);
-    boolean existsByCategoryNameAndType(String categoryName, Class<? extends CategoryEvent> type);
-    boolean existsByCategoryNameInAndType(Collection<String> categoryName, Class<? extends CategoryEvent> type);
+    boolean existsByCategoryNameAndTypeNot(String categoryName, Class<? extends CategoryEvent> type);
+    boolean existsAllByCategoryNameInAndTypeNot(Collection<String> categoryName, Class<? extends CategoryEvent> type);
 }

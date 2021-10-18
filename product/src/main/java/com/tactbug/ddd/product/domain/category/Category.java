@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.tactbug.ddd.common.entity.BaseDomain;
 import com.tactbug.ddd.common.entity.Event;
-import com.tactbug.ddd.common.entity.EventType;
 import com.tactbug.ddd.common.utils.IdUtil;
 import com.tactbug.ddd.common.utils.SerializeUtil;
 import com.tactbug.ddd.product.assist.exception.TactProductException;
@@ -28,8 +27,8 @@ public class Category extends BaseDomain {
     private String remark;
     private Long parentId;
 
-    private Set<Long> childrenIds;
-    private Set<Long> brandIds;
+    private Set<Long> childrenIds = new HashSet<>();
+    private Set<Long> brandIds = new HashSet<>();
 
     private static final Long ROOT_CATEGORY = 0L;
 
@@ -72,7 +71,7 @@ public class Category extends BaseDomain {
             Category parent = categoryRepository.getOne(parentId)
                     .orElseThrow(() -> TactProductException.resourceOperateError("当前父分类[" + parentId + "]不存在"));
             AddChild addChild = new AddChild(parentId, Collections.singletonList(id), operator);
-            events.addAll(parent.addChild(idUtil, addChild, categoryRepository));
+            events.addAll(parent.addChildren(idUtil, Collections.singletonList(this), addChild, categoryRepository));
         }
         events.add(new CategoryCreated(idUtil.getId(), this, operator));
         check();
@@ -108,7 +107,7 @@ public class Category extends BaseDomain {
             if (!parentId.equals(ROOT_CATEGORY)){
                 Category parent = categoryRepository.getOne(parentId)
                         .orElseThrow(() -> TactProductException.resourceOperateError("父分类[" + changeParent.parentId() + "]不存在"));
-                CategoryChildRemoved categoryChildRemoved = parent.removeChild(idUtil, this, changeParent.operator());
+                CategoryChildRemoved categoryChildRemoved = parent.removeChildren(idUtil, this, changeParent.operator());
                 events.add(categoryChildRemoved);
             }
         }
@@ -117,6 +116,40 @@ public class Category extends BaseDomain {
         check();
         CategoryParentChanged categoryParentChanged = new CategoryParentChanged(idUtil.getId(), this, changeParent.operator());
         events.add(categoryParentChanged);
+        return events;
+    }
+
+    public List<CategoryEvent> addChildren(IdUtil idUtil, Collection<Category> children, AddChild addChild, CategoryRepository categoryRepository){
+        List<CategoryEvent> events = new ArrayList<>();
+        if (!childrenIds.isEmpty()){
+            children.removeIf(c -> childrenIds.contains(c.getId()));
+        }
+        if (!children.isEmpty()){
+            children.forEach(c -> {
+                ChangeParent changeParent = new ChangeParent(c.id, id, addChild.operator());
+                events.addAll(c.changeParent(idUtil, changeParent, categoryRepository));
+                childrenIds.add(c.id);
+                update();
+                events.add(new CategoryChildAdded(id, this, c.id, addChild.operator()));
+            });
+        }
+        return events;
+    }
+
+    private List<CategoryEvent> removeChildren(IdUtil idUtil, Collection<Category> children, Long operator){
+        List<CategoryEvent> events = new ArrayList<>();
+        if (children.isEmpty()){
+            return events;
+        }
+        if (children.stream().map(Category::getParentId).distinct().count() != 1){
+            throw new IllegalStateException("子分类状态异常");
+        }
+        if (!child.parentId.equals(id) || !childrenIds.contains(child.id)){
+            throw new IllegalStateException("父子分类不匹配[" + this + "], [" + child +"]");
+        }
+        childrenIds.remove(child.getId());
+        update();
+        check();
         return events;
     }
 
@@ -159,32 +192,11 @@ public class Category extends BaseDomain {
     }
 
     public CategoryDeleted delete(Long eventId, DeleteCategory deleteCategory){
+        if (!parentId.equals(ROOT_CATEGORY)){
+
+        }
         update();
         return new CategoryDeleted(eventId, this, deleteCategory.operator());
-    }
-
-    public List<CategoryEvent> addChild(IdUtil idUtil, AddChild addChild, CategoryRepository categoryRepository){
-        List<CategoryEvent> events = new ArrayList<>();
-        Collection<Long> addedIds = addChild.childrenIds();
-        addedIds.removeAll(childrenIds);
-        if (!addedIds.isEmpty()){
-            List<Category> children = categoryRepository.getBatch(addedIds);
-            children.forEach(c -> {
-                ChangeParent changeParent = new ChangeParent(c.id, id, addChild.operator());
-                events.addAll(c.changeParent(idUtil, changeParent, categoryRepository));
-            });
-        }
-        return events;
-    }
-
-    private CategoryChildRemoved removeChild(IdUtil idUtil, Category child, Long operator){
-        if (!child.parentId.equals(id) || !childrenIds.contains(child.id)){
-            throw new IllegalStateException("父子分类不匹配[" + this + "], [" + child +"]");
-        }
-        childrenIds.remove(child.getId());
-        update();
-        check();
-        return new CategoryChildRemoved(idUtil.getId(), this, child.getId(), operator);
     }
 
     private static Category doReplay(Category snapshot, List<CategoryEvent> events) {

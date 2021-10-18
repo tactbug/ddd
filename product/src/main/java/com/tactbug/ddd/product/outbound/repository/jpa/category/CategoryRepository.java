@@ -122,10 +122,10 @@ public class CategoryRepository {
     }
 
     private boolean isExists(Long id, @Nullable Category category){
-        if (Objects.nonNull(category) && eventRepository.existsByCategoryNameAndType(category.getName(), CategoryDeleted.class)){
+        if (Objects.nonNull(category) && eventRepository.existsByCategoryNameAndTypeNot(category.getName(), CategoryDeleted.class)){
             return true;
         }
-        if (eventRepository.existsByDomainId(id) && !eventRepository.existsByDomainIdAndType(id, CategoryDeleted.class)){
+        if (eventRepository.existsByDomainIdAndTypeNot(id, CategoryDeleted.class)){
             return true;
         }
         return false;
@@ -134,14 +134,14 @@ public class CategoryRepository {
     private boolean isExistsBatch(Collection<Long> ids, @Nullable Collection<Category> categories){
         if (Objects.nonNull(categories) && !categories.isEmpty()){
             List<String> names = categories.stream().map(Category::getName).collect(Collectors.toList());
-            if (eventRepository.existsByCategoryNameInAndType(names, CategoryDeleted.class)){
-                return false;
+            if (eventRepository.existsAllByCategoryNameInAndTypeNot(names, CategoryDeleted.class)){
+                return true;
             }
         }
-        if (eventRepository.existsAllByDomainIdIn(ids) && !eventRepository.existsByDomainIdInAndType(ids, CategoryDeleted.class)){
-            return false;
+        if (eventRepository.existsAllByDomainIdInAndTypeNot(ids, CategoryDeleted.class)){
+            return true;
         }
-        return true;
+        return false;
     }
 
     private void checkEvents(Collection<CategoryEvent> events){
@@ -150,7 +150,7 @@ public class CategoryRepository {
             List<CategoryEvent> sortedList = eventList.stream().sorted().collect(Collectors.toList());
             List<CategoryEvent> exists = eventRepository.findAllByDomainIdAndDomainVersionGreaterThanOrderByDomainVersionAsc(domainId, sortedList.get(0).getDomainVersion() - 1);
             if (!exists.isEmpty()){
-                throw TactProductException.resourceOperateError("分类[" + domainId + "]状态异常[" + sortedList.get(0).getDomainVersion() + "]");
+                throw TactProductException.resourceOperateError("分类[" + domainId + "]状态已经改变, 请重新确认");
             }
         });
     }
