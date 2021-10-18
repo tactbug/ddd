@@ -47,6 +47,16 @@ public class CategoryCommand extends BaseCommand {
         return new DeleteCategory(id, operator);
     }
 
+    public AddChild addChild(){
+        checkAddOrRemoveChild();
+        return new AddChild(id, childrenIds, operator);
+    }
+
+    public RemoveChild removeChild(){
+        checkAddOrRemoveChild();
+        return new RemoveChild(id, childrenIds, operator);
+    }
+
     public UpdateChildren updateChildren(){
         checkUpdateChildren();
         return new UpdateChildren(id, childrenIds, operator);
@@ -77,6 +87,10 @@ public class CategoryCommand extends BaseCommand {
         if (Objects.isNull(parentId)){
             throw new IllegalArgumentException("必须指定父分类");
         }
+    }
+
+    private void checkAddOrRemoveChild(){
+        checkId();
     }
 
     private void checkUpdateChildren(){

@@ -40,7 +40,9 @@ public class CategoryService {
                     .orElseThrow(() -> TactProductException.resourceOperateError("父分类[" + parentId + "]不存在"));
         }
         Category category = Category.generate(CATEGORY_ID_UTIL.getId(), createCategory);
-        categoryRepository.create(category, createCategory.operator());
+        List<CategoryEvent> events = category.createCategory(CATEGORY_ID_UTIL, categoryRepository, createCategory.operator());
+        category.check();
+        categoryRepository.create(events, category);
         return category;
     }
 

@@ -71,10 +71,12 @@ public class Category extends BaseDomain {
         if (!parentId.equals(ROOT_CATEGORY)){
             Category parent = categoryRepository.getOne(parentId)
                     .orElseThrow(() -> TactProductException.resourceOperateError("当前父分类[" + parentId + "]不存在"));
-            events.add(parent.)
+            AddChild addChild = new AddChild(parentId, Collections.singletonList(id), operator);
+            events.addAll(parent.addChild(idUtil, addChild, categoryRepository));
         }
+        events.add(new CategoryCreated(idUtil.getId(), this, operator));
         check();
-        return new CategoryCreated(idUtil.getId(), this, operator);
+        return events;
     }
 
     public CategoryNameUpdated updateName(IdUtil idUtil, UpdateName updateName) {
@@ -161,6 +163,19 @@ public class Category extends BaseDomain {
         return new CategoryDeleted(eventId, this, deleteCategory.operator());
     }
 
+    public List<CategoryEvent> addChild(IdUtil idUtil, AddChild addChild, CategoryRepository categoryRepository){
+        List<CategoryEvent> events = new ArrayList<>();
+        Collection<Long> addedIds = addChild.childrenIds();
+        addedIds.removeAll(childrenIds);
+        if (!addedIds.isEmpty()){
+            List<Category> children = categoryRepository.getBatch(addedIds);
+            children.forEach(c -> {
+                ChangeParent changeParent = new ChangeParent(c.id, id, addChild.operator());
+                events.addAll(c.changeParent(idUtil, changeParent, categoryRepository));
+            });
+        }
+        return events;
+    }
 
     private CategoryChildRemoved removeChild(IdUtil idUtil, Category child, Long operator){
         if (!child.parentId.equals(id) || !childrenIds.contains(child.id)){

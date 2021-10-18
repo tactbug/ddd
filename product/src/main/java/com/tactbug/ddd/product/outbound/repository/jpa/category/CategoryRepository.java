@@ -24,23 +24,18 @@ import java.util.stream.Collectors;
 @Slf4j
 public class CategoryRepository {
 
-    private static final IdUtil CATEGORY_EVENT_ID_UTIL = IdUtil.getOrGenerate(
-            TactProductApplication.APPLICATION_NAME, Category.class, 50000, 5000, 10000
-    );
-
     @Resource
     private CategorySnapshotRepository snapshotRepository;
     @Resource
     private CategoryEventRepository eventRepository;
 
-    public void create(Category category, Long operator){
+    public void create(Collection<CategoryEvent> events, Category category){
         if (isExists(category.getId(), category)){
             throw TactProductException.resourceOperateError("分类[" + category + "]已经存在");
         }
-        category.check();
-        CategoryCreated event = category.createCategory(CATEGORY_EVENT_ID_UTIL, operator);
-        checkEvents(category.getId(), category.getVersion());
-        eventRepository.save(event);
+        events.removeIf(Objects::isNull);
+        checkEvents(events);
+        eventRepository.saveAll(events);
         snapshotRepository.save(category);
     }
 
@@ -52,12 +47,8 @@ public class CategoryRepository {
         if (!isExistsBatch(idSet, null)){
             throw TactProductException.resourceOperateError("" + idSet + "中有分类不存在");
         }
-        Map<Long, List<CategoryEvent>> eventMap = events.stream().collect(Collectors.groupingBy(CategoryEvent::getDomainId));
-        eventMap.forEach((id, eventList) -> {
-            List<CategoryEvent> sortedEvent = eventList.stream().sorted().collect(Collectors.toList());
-            checkEvents(id, sortedEvent.get(0).getDomainVersion() - 1);
-            eventRepository.saveAll(eventList);
-        });
+        checkEvents(events);
+        eventRepository.saveAll(events);
     }
 
     public void delete(Category category, CategoryDeleted categoryDeleted){
@@ -68,7 +59,7 @@ public class CategoryRepository {
             throw TactProductException.resourceOperateError("分类[" + category + "]不存在");
         }
         category.check();
-        checkEvents(category.getId(), category.getVersion());
+        checkEvents(Collections.singleton(categoryDeleted));
         snapshotRepository.save(category);
         eventRepository.save(categoryDeleted);
     }
@@ -131,36 +122,36 @@ public class CategoryRepository {
     }
 
     private boolean isExists(Long id, @Nullable Category category){
-        if (!eventRepository.existsByDomainId(id)){
-            return false;
-        }
-        if (eventRepository.existsByDomainIdAndType(id, CategoryDeleted.class)){
-            return false;
-        }
         if (Objects.nonNull(category) && eventRepository.existsByCategoryNameAndType(category.getName(), CategoryDeleted.class)){
-            return false;
+            return true;
         }
-        return true;
+        if (eventRepository.existsByDomainId(id) && !eventRepository.existsByDomainIdAndType(id, CategoryDeleted.class)){
+            return true;
+        }
+        return false;
     }
 
     private boolean isExistsBatch(Collection<Long> ids, @Nullable Collection<Category> categories){
-        if (!eventRepository.existsAllByDomainIdIn(ids)){
-            return false;
-        }
-        if (eventRepository.existsByDomainIdInAndType(ids, CategoryDeleted.class)){
-            return false;
-        }
         if (Objects.nonNull(categories) && !categories.isEmpty()){
             List<String> names = categories.stream().map(Category::getName).collect(Collectors.toList());
-            return !eventRepository.existsByCategoryNameInAndType(names, CategoryDeleted.class);
+            if (eventRepository.existsByCategoryNameInAndType(names, CategoryDeleted.class)){
+                return false;
+            }
+        }
+        if (eventRepository.existsAllByDomainIdIn(ids) && !eventRepository.existsByDomainIdInAndType(ids, CategoryDeleted.class)){
+            return false;
         }
         return true;
     }
 
-    private void checkEvents(Long categoryId, Integer currentVersion){
-        List<CategoryEvent> exists = eventRepository.findAllByDomainIdAndDomainVersionGreaterThanOrderByDomainVersionAsc(categoryId, currentVersion);
-        if (!exists.isEmpty()){
-            throw TactProductException.resourceOperateError("分类[" + categoryId + "]状态异常[" + currentVersion + "]");
-        }
+    private void checkEvents(Collection<CategoryEvent> events){
+        Map<Long, List<CategoryEvent>> eventMap = events.stream().collect(Collectors.groupingBy(CategoryEvent::getDomainId));
+        eventMap.forEach((domainId, eventList) -> {
+            List<CategoryEvent> sortedList = eventList.stream().sorted().collect(Collectors.toList());
+            List<CategoryEvent> exists = eventRepository.findAllByDomainIdAndDomainVersionGreaterThanOrderByDomainVersionAsc(domainId, sortedList.get(0).getDomainVersion() - 1);
+            if (!exists.isEmpty()){
+                throw TactProductException.resourceOperateError("分类[" + domainId + "]状态异常[" + sortedList.get(0).getDomainVersion() + "]");
+            }
+        });
     }
 }
