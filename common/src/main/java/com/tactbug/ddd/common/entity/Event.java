@@ -38,6 +38,15 @@ public class Event<T extends BaseDomain> extends BaseDomain {
         checkNull();
     }
 
+    public void replay(BaseDomain baseDomain){
+        baseDomain.setId(domainId);
+        baseDomain.setVersion(domainVersion);
+        if (Objects.isNull(baseDomain.createTime)){
+            baseDomain.setCreateTime(createTime);
+        }
+        baseDomain.setUpdateTime(createTime);
+    }
+
     @Override
     public int compareTo(BaseDomain o) {
         if (Objects.isNull(o)){

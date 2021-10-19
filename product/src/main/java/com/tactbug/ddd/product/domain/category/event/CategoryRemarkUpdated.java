@@ -29,7 +29,18 @@ public class CategoryRemarkUpdated extends CategoryEvent {
         super();
     }
 
-    public void assembleData(Category category){
+    public void replay(Category category){
+        super.replay(category);
+        try {
+            HashMap<String, Object> dataMap = SerializeUtil.jsonToObject(data, new TypeReference<>() {
+            });
+            category.setRemark(dataMap.get("remark").toString());
+        } catch (Exception e) {
+            throw TactProductException.replyError("[" + category.getId() + "]备注数据异常");
+        }
+    }
+
+    private void assembleData(Category category){
         Map<String, Object> map = new HashMap<>();
         map.put("id", category.getId());
         map.put("remark", category.getRemark());

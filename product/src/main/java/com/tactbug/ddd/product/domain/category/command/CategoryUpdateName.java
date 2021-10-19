@@ -3,7 +3,7 @@ package com.tactbug.ddd.product.domain.category.command;
 /**
  * @Author tactbug
  * @Email tactbug@Gmail.com
- * @Time 2021/10/7 16:58
+ * @Time 2021/10/7 16:57
  */
-public record UpdateRemark(Long id, String remark, Long operator) {
+public record CategoryUpdateName(Long id, String name, Long operator) {
 }

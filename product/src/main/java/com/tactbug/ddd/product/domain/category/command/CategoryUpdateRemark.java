@@ -5,5 +5,5 @@ package com.tactbug.ddd.product.domain.category.command;
  * @Email tactbug@Gmail.com
  * @Time 2021/10/7 16:58
  */
-public record ChangeParent(Long id, Long parentId, Long operator) {
+public record CategoryUpdateRemark(Long id, String remark, Long operator) {
 }

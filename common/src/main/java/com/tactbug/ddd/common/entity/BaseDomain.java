@@ -53,17 +53,6 @@ public class BaseDomain implements Comparable<BaseDomain>{
         }
     }
 
-    public void replay(Event<? extends BaseDomain> event) {
-        if (Objects.isNull(id)){
-            this.id = event.getDomainId();
-        }
-        this.version = event.getDomainVersion();
-        if (Objects.isNull(createTime)){
-            this.createTime = event.getCreateTime();
-        }
-        this.updateTime = event.getCreateTime();
-    }
-
     @Override
     public int compareTo(BaseDomain o) {
         if (updateTime.isEqual(o.getUpdateTime())){

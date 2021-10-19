@@ -27,19 +27,19 @@ public class CategoryCommand extends BaseCommand {
         return new CreateCategory(name, remark, parentId, operator);
     }
 
-    public UpdateName updateName(){
+    public CategoryUpdateName updateName(){
         checkUpdateName();
-        return new UpdateName(id, name, operator);
+        return new CategoryUpdateName(id, name, operator);
     }
 
-    public UpdateRemark updateRemark(){
+    public CategoryUpdateRemark updateRemark(){
         checkUpdateRemark();
-        return new UpdateRemark(id, remark, operator);
+        return new CategoryUpdateRemark(id, remark, operator);
     }
 
-    public ChangeParent changeParent(){
+    public CategoryChangeParent changeParent(){
         checkChangeParent();
-        return new ChangeParent(id, parentId, operator);
+        return new CategoryChangeParent(id, parentId, operator);
     }
 
     public DeleteCategory deleteCategory(){
@@ -47,19 +47,19 @@ public class CategoryCommand extends BaseCommand {
         return new DeleteCategory(id, operator);
     }
 
-    public AddChild addChild(){
+    public CategoryAddChildren addChild(){
         checkAddOrRemoveChild();
-        return new AddChild(id, childrenIds, operator);
+        return new CategoryAddChildren(id, childrenIds, operator);
     }
 
-    public RemoveChild removeChild(){
+    public CategoryRemoveChildren removeChild(){
         checkAddOrRemoveChild();
-        return new RemoveChild(id, childrenIds, operator);
+        return new CategoryRemoveChildren(id, childrenIds, operator);
     }
 
-    public UpdateChildren updateChildren(){
+    public CategoryUpdateChildren updateChildren(){
         checkUpdateChildren();
-        return new UpdateChildren(id, childrenIds, operator);
+        return new CategoryUpdateChildren(id, childrenIds, operator);
     }
 
     private void checkCreateCategory(){

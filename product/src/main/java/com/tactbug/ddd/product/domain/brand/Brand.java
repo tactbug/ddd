@@ -110,7 +110,6 @@ public class Brand extends BaseDomain {
     }
 
     private void eventsReplay(Event<Brand> event) {
-        super.replay(event);
         String json = event.getData();
         Map<String, Object> data;
         try {

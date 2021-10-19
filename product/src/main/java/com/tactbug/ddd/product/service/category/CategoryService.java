@@ -6,7 +6,6 @@ import com.tactbug.ddd.product.assist.exception.TactProductException;
 import com.tactbug.ddd.product.domain.category.Category;
 import com.tactbug.ddd.product.domain.category.command.CategoryCommand;
 import com.tactbug.ddd.product.domain.category.command.CreateCategory;
-import com.tactbug.ddd.product.domain.category.event.CategoryDeleted;
 import com.tactbug.ddd.product.domain.category.event.CategoryEvent;
 import com.tactbug.ddd.product.outbound.repository.jpa.category.CategoryRepository;
 import org.springframework.stereotype.Service;
@@ -62,8 +61,8 @@ public class CategoryService {
                 .or(Optional::empty);
         if (optional.isPresent()){
             Category category = optional.get();
-            CategoryDeleted event = category.delete(CATEGORY_ID_UTIL.getId(), categoryCommand.deleteCategory());
-            categoryRepository.delete(category, event);
+            List<CategoryEvent> events = category.delete(CATEGORY_ID_UTIL, categoryCommand.deleteCategory(), categoryRepository);
+            categoryRepository.delete(category, events);
             optional = Optional.of(category);
         }
         return optional;

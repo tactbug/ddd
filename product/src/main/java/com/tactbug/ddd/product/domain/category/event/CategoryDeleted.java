@@ -29,7 +29,7 @@ public class CategoryDeleted extends CategoryEvent {
         super();
     }
 
-    public void assembleData(Category category) {
+    private void assembleData(Category category) {
         Map<String, Object> map = new HashMap<>();
         map.put("id", category.getId());
         try {

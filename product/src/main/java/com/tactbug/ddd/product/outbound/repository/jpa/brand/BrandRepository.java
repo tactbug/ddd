@@ -1,6 +1,5 @@
 package com.tactbug.ddd.product.outbound.repository.jpa.brand;
 
-import com.tactbug.ddd.common.entity.EventType;
 import com.tactbug.ddd.common.utils.IdUtil;
 import com.tactbug.ddd.product.TactProductApplication;
 import com.tactbug.ddd.product.assist.exception.TactProductException;

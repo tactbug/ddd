@@ -9,6 +9,7 @@ import com.tactbug.ddd.product.assist.exception.TactProductException;
 
 import javax.persistence.Entity;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 
@@ -30,7 +31,20 @@ public class CategoryCreated extends CategoryEvent {
         super();
     }
 
-    public void assembleData(Category category) {
+    public void replay(Category category){
+        super.replay(category);
+        try {
+            HashMap<String, Object> dataMap = SerializeUtil.jsonToObject(data, new TypeReference<>() {
+            });
+            category.setName(dataMap.get("name").toString());
+            category.setRemark(dataMap.get("remark").toString());
+            category.setParentId(Long.valueOf(dataMap.get("parentId").toString()));
+        } catch (Exception e) {
+            throw TactProductException.replyError("[" + category.getId() + "]新增数据异常");
+        }
+    }
+
+    private void assembleData(Category category) {
         Map<String, Object> map = new HashMap<>();
         map.put("id", category.getId());
         map.put("name", category.getName());

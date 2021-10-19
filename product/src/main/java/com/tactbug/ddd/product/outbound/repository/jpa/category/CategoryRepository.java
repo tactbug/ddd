@@ -1,10 +1,7 @@
 package com.tactbug.ddd.product.outbound.repository.jpa.category;
 
-import com.tactbug.ddd.common.utils.IdUtil;
-import com.tactbug.ddd.product.TactProductApplication;
 import com.tactbug.ddd.product.assist.exception.TactProductException;
 import com.tactbug.ddd.product.domain.category.Category;
-import com.tactbug.ddd.product.domain.category.event.CategoryCreated;
 import com.tactbug.ddd.product.domain.category.event.CategoryDeleted;
 import com.tactbug.ddd.product.domain.category.event.CategoryEvent;
 import lombok.extern.slf4j.Slf4j;
@@ -51,7 +48,7 @@ public class CategoryRepository {
         eventRepository.saveAll(events);
     }
 
-    public void delete(Category category, CategoryDeleted categoryDeleted){
+    public void delete(Category category, List<CategoryEvent> events){
         if (isDelete(category.getId())){
             return;
         }
@@ -59,9 +56,9 @@ public class CategoryRepository {
             throw TactProductException.resourceOperateError("分类[" + category + "]不存在");
         }
         category.check();
-        checkEvents(Collections.singleton(categoryDeleted));
+        checkEvents(events);
         snapshotRepository.save(category);
-        eventRepository.save(categoryDeleted);
+        eventRepository.saveAll(events);
     }
 
     public Optional<Category> getOne(Long id){
