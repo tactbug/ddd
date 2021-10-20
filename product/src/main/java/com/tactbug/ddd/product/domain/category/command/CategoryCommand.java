@@ -47,21 +47,6 @@ public class CategoryCommand extends BaseCommand {
         return new DeleteCategory(id, operator);
     }
 
-    public CategoryAddChildren addChild(){
-        checkAddOrRemoveChild();
-        return new CategoryAddChildren(id, childrenIds, operator);
-    }
-
-    public CategoryRemoveChildren removeChild(){
-        checkAddOrRemoveChild();
-        return new CategoryRemoveChildren(id, childrenIds, operator);
-    }
-
-    public CategoryUpdateChildren updateChildren(){
-        checkUpdateChildren();
-        return new CategoryUpdateChildren(id, childrenIds, operator);
-    }
-
     private void checkCreateCategory(){
         if (Objects.isNull(name) || name.isBlank()){
             throw new IllegalArgumentException("分类名称不能为空");
@@ -87,14 +72,6 @@ public class CategoryCommand extends BaseCommand {
         if (Objects.isNull(parentId)){
             throw new IllegalArgumentException("必须指定父分类");
         }
-    }
-
-    private void checkAddOrRemoveChild(){
-        checkId();
-    }
-
-    private void checkUpdateChildren(){
-        checkId();
     }
 
     private void checkDeleteCategory(){

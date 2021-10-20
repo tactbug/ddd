@@ -67,8 +67,7 @@ public class Category extends BaseDomain {
         if (!parentId.equals(ROOT_CATEGORY)){
             Category parent = categoryRepository.getOne(parentId)
                     .orElseThrow(() -> TactProductException.resourceOperateError("当前父分类[" + parentId + "]不存在"));
-            CategoryAddChildren categoryAddChildren = new CategoryAddChildren(parentId, Collections.singletonList(id), operator);
-            events.addAll(parent.addChildren(idUtil, Collections.singletonList(this), categoryAddChildren, categoryRepository));
+            events.addAll(parent.addChildren(idUtil, Collections.singletonList(this), operator, categoryRepository));
         }
         events.add(new CategoryCreated(idUtil.getId(), this, operator));
         check();
@@ -116,7 +115,7 @@ public class Category extends BaseDomain {
                     parent.addChildren(
                             idUtil,
                             Collections.singleton(this),
-                            new CategoryAddChildren(idUtil.getId(), Collections.singletonList(id), categoryChangeParent.operator()),
+                            categoryChangeParent.operator(),
                             categoryRepository
                     )
             );
@@ -128,18 +127,18 @@ public class Category extends BaseDomain {
         return events;
     }
 
-    public List<CategoryEvent> addChildren(IdUtil idUtil, Collection<Category> children, CategoryAddChildren categoryAddChildren, CategoryRepository categoryRepository){
+    private List<CategoryEvent> addChildren(IdUtil idUtil, Collection<Category> children, Long operator, CategoryRepository categoryRepository){
         List<CategoryEvent> events = new ArrayList<>();
         if (!childrenIds.isEmpty()){
             children.removeIf(c -> childrenIds.contains(c.getId()));
         }
         if (!children.isEmpty()){
             children.forEach(c -> {
-                CategoryChangeParent categoryChangeParent = new CategoryChangeParent(c.id, id, categoryAddChildren.operator());
+                CategoryChangeParent categoryChangeParent = new CategoryChangeParent(c.id, id, operator);
                 events.addAll(c.changeParent(idUtil, categoryChangeParent, categoryRepository));
                 childrenIds.add(c.id);
                 update();
-                events.add(new CategoryChildrenAdded(id, this, Collections.singletonList(c.id), categoryAddChildren.operator()));
+                events.add(new CategoryChildrenAdded(id, this, Collections.singletonList(c.id), operator));
             });
         }
         return events;
@@ -166,24 +165,6 @@ public class Category extends BaseDomain {
         return Collections.singletonList(new CategoryChildrenRemoved(idUtil.getId(), this, removeChildrenIds, operator));
     }
 
-    public List<CategoryEvent> updateChildrenIds(IdUtil eventIdUtil, CategoryUpdateChildren categoryUpdateChildren, CategoryRepository categoryRepository){
-        List<CategoryEvent> events = new ArrayList<>();
-        if (childrenIds.equals(categoryUpdateChildren.childrenIds())){
-            return events;
-        }
-        List<Category> children = categoryRepository.getBatch(categoryUpdateChildren.childrenIds());
-
-        children.forEach(c -> {
-            CategoryCommand childChangeParent = new CategoryCommand();
-            childChangeParent.setId(c.id);
-            childChangeParent.setParentId(this.id);
-            childChangeParent.setOperator(categoryUpdateChildren.operator());
-            List<CategoryEvent> childChangeParentEvents = c.changeParent(eventIdUtil, childChangeParent.changeParent(), categoryRepository);
-            events.addAll(childChangeParentEvents);
-        });
-        return events;
-    }
-
     public List<CategoryEvent> update(CategoryCommand categoryCommand, IdUtil eventIdUtil, CategoryRepository categoryRepository){
         List<CategoryEvent> events = new ArrayList<>();
         if (Objects.nonNull(categoryCommand.getName()) && !categoryCommand.getName().equals(name)){
@@ -195,10 +176,6 @@ public class Category extends BaseDomain {
         if (Objects.nonNull(categoryCommand.getParentId()) && !categoryCommand.getParentId().equals(parentId)){
             CategoryChangeParent categoryChangeParent = categoryCommand.changeParent();
             events.addAll(changeParent(eventIdUtil, categoryChangeParent, categoryRepository));
-        }
-        if (Objects.nonNull(categoryCommand.getChildrenIds()) && !categoryCommand.getChildrenIds().equals(childrenIds)){
-            CategoryUpdateChildren categoryUpdateChildren = categoryCommand.updateChildren();
-            events.addAll(updateChildrenIds(eventIdUtil, categoryUpdateChildren, categoryRepository));
         }
         check();
         return events;
