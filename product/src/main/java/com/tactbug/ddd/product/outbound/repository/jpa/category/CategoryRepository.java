@@ -27,7 +27,7 @@ public class CategoryRepository {
     private CategoryEventRepository eventRepository;
 
     public void create(Collection<CategoryEvent> events, Category category){
-        if (isExists(category.getId(), category)){
+        if (isExistsSameName(category.getName())){
             throw TactProductException.resourceOperateError("分类[" + category + "]已经存在");
         }
         events.removeIf(Objects::isNull);
@@ -118,27 +118,43 @@ public class CategoryRepository {
         return eventRepository.existsByDomainIdInAndType(ids, CategoryDeleted.class);
     }
 
-    private boolean isExists(Long id, @Nullable Category category){
-        if (Objects.nonNull(category) && eventRepository.existsByCategoryNameAndTypeNot(category.getName(), CategoryDeleted.class)){
-            return true;
+    private boolean isExists(Long id){
+        Optional<CategoryEvent> optional = eventRepository.findFirstByDomainIdOrderByDomainVersionDesc(id);
+        if (optional.isEmpty()){
+            return false;
         }
-        if (eventRepository.existsByDomainIdAndTypeNot(id, CategoryDeleted.class)){
-            return true;
+        CategoryEvent categoryEvent = optional.get();
+        if (categoryEvent.getType().equals(CategoryDeleted.class)){
+            return false;
         }
-        return false;
+        return true;
     }
 
-    private boolean isExistsBatch(Collection<Long> ids, @Nullable Collection<Category> categories){
-        if (Objects.nonNull(categories) && !categories.isEmpty()){
-            List<String> names = categories.stream().map(Category::getName).collect(Collectors.toList());
-            if (eventRepository.existsAllByCategoryNameInAndTypeNot(names, CategoryDeleted.class)){
-                return true;
+    private boolean isExistsBatch(Collection<Long> ids){
+        List<CategoryEvent> all = eventRepository.findAllByDomainIdIn(ids);
+        if (all.stream().map(CategoryEvent::getDomainId).distinct().count() != ids.size()){
+            return false;
+        }
+        Map<Long, List<CategoryEvent>> map = all.stream().collect(Collectors.groupingBy(CategoryEvent::getDomainId));
+        map.forEach((domainId, events) -> {
+            List<CategoryEvent> sortedEvents = events.stream().sorted().collect(Collectors.toList());
+            if (sortedEvents.get(0).getType().equals(CategoryDeleted.class)){
+
             }
+        });
+        return true;
+    }
+
+    private boolean isExistsSameName(String name){
+        Optional<CategoryEvent> optional = eventRepository.findFirstByCategoryNameOrderByDomainVersionDesc(name);
+        if (optional.isEmpty()){
+            return false;
         }
-        if (eventRepository.existsAllByDomainIdInAndTypeNot(ids, CategoryDeleted.class)){
-            return true;
+        CategoryEvent categoryEvent = optional.get();
+        if (categoryEvent.getType().equals(CategoryDeleted.class)){
+            return false;
         }
-        return false;
+        return true;
     }
 
     private void checkEvents(Collection<CategoryEvent> events){

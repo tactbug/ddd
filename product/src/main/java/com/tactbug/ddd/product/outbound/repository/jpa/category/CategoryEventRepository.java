@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @Author tactbug
@@ -15,10 +16,10 @@ import java.util.List;
 @Repository
 public interface CategoryEventRepository extends JpaRepository<CategoryEvent, Long> {
     List<CategoryEvent> findAllByDomainIdAndDomainVersionGreaterThanOrderByDomainVersionAsc(Long domainId, Integer domainVersion);
-    boolean existsByDomainIdAndTypeNot(Long domainId, Class<? extends CategoryEvent> type);
+    Optional<CategoryEvent> findFirstByDomainIdOrderByDomainVersionDesc(Long domainId);
+    Optional<CategoryEvent> findFirstByCategoryNameOrderByDomainVersionDesc(String categoryName);
+    List<CategoryEvent> findAllByDomainIdIn(Collection<Long> domainId);
     boolean existsByDomainIdAndType(Long domainId, Class<? extends CategoryEvent> type);
     boolean existsAllByDomainIdInAndTypeNot(Collection<Long> domainId, Class<? extends CategoryEvent> type);
     boolean existsByDomainIdInAndType(Collection<Long> domainId, Class<? extends CategoryEvent> type);
-    boolean existsByCategoryNameAndTypeNot(String categoryName, Class<? extends CategoryEvent> type);
-    boolean existsAllByCategoryNameInAndTypeNot(Collection<String> categoryName, Class<? extends CategoryEvent> type);
 }
