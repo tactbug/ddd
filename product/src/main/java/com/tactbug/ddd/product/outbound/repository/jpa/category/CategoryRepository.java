@@ -4,11 +4,13 @@ import com.tactbug.ddd.product.assist.exception.TactProductException;
 import com.tactbug.ddd.product.domain.category.Category;
 import com.tactbug.ddd.product.domain.category.event.CategoryDeleted;
 import com.tactbug.ddd.product.domain.category.event.CategoryEvent;
+import com.tactbug.ddd.product.domain.category.event.CategoryNameUpdated;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.lang.Nullable;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import javax.persistence.LockModeType;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -27,7 +29,7 @@ public class CategoryRepository {
     private CategoryEventRepository eventRepository;
 
     public void create(Collection<CategoryEvent> events, Category category){
-        if (isExistsSameName(category.getName())){
+        if (isExistsSameName(category.getId(), category.getName())){
             throw TactProductException.resourceOperateError("分类[" + category + "]已经存在");
         }
         events.removeIf(Objects::isNull);
@@ -41,10 +43,17 @@ public class CategoryRepository {
         if (isDeleteAny(idSet)){
             throw TactProductException.resourceOperateError("" + idSet + "存在已被删除的分类");
         }
-        if (!isExistsBatch(idSet, null)){
+        if (!isExistsBatch(idSet)){
             throw TactProductException.resourceOperateError("" + idSet + "中有分类不存在");
         }
         checkEvents(events);
+        events.stream()
+                .collect(Collectors.groupingBy(CategoryEvent::getType))
+                .forEach((type, eventGroup) -> {
+                    if (CategoryNameUpdated.class.equals(type)) {
+                        updateName(eventGroup);
+                    }
+                });
         eventRepository.saveAll(events);
     }
 
@@ -52,7 +61,7 @@ public class CategoryRepository {
         if (isDelete(category.getId())){
             return;
         }
-        if (!isExists(category.getId(), category)){
+        if (!isExists(category.getId())){
             throw TactProductException.resourceOperateError("分类[" + category + "]不存在");
         }
         category.check();
@@ -65,7 +74,7 @@ public class CategoryRepository {
         if (isDelete(id)){
             throw TactProductException.resourceOperateError("分类[" + id + "]已被删除");
         }
-        if (!isExists(id, null)){
+        if (!isExists(id)){
             throw TactProductException.resourceOperateError("分类[" + id + "]不存在");
         }
         Category snapshot = getSnapshot(id).orElse(new Category());
@@ -79,7 +88,7 @@ public class CategoryRepository {
         if (isDeleteAny(ids)){
             throw TactProductException.resourceOperateError("" + ids + "里有已经删除的分类");
         }
-        if (!isExistsBatch(ids, null)){
+        if (!isExistsBatch(ids)){
             throw TactProductException.resourceOperateError("" + ids + "里有不存在的分类");
         }
         Map<Long, List<Category>> snapshotMap = getSnapshotBatch(ids).stream().collect(Collectors.groupingBy(Category::getId));
@@ -100,6 +109,24 @@ public class CategoryRepository {
         List<Category> categoryList = new ArrayList<>();
         eventMap.forEach((snapshot, events) -> categoryList.add(Category.replay(snapshot, events)));
         return categoryList;
+    }
+
+    @Lock(value = LockModeType.PESSIMISTIC_READ)
+    public void updateName(Collection<CategoryEvent> categoryEvents){
+        Map<Long, List<CategoryEvent>> eventMap = categoryEvents.stream().collect(Collectors.groupingBy(CategoryEvent::getDomainId));
+        eventMap.forEach((id, events) -> {
+            if (!isExists(id)){
+                throw TactProductException.resourceOperateError("分类[" + id + "]不存在");
+            }
+            Collections.sort(events);
+            for (CategoryEvent c :
+                    events) {
+                if (isExistsSameName(id, c.getCategoryName())){
+                    throw TactProductException.resourceOperateError("分类[" + c.getCategoryName() + "]已经存在");
+                }
+            }
+            eventRepository.saveAll(events);
+        });
     }
 
     private Optional<Category> getSnapshot(Long id){
@@ -136,23 +163,28 @@ public class CategoryRepository {
             return false;
         }
         Map<Long, List<CategoryEvent>> map = all.stream().collect(Collectors.groupingBy(CategoryEvent::getDomainId));
-        map.forEach((domainId, events) -> {
-            List<CategoryEvent> sortedEvents = events.stream().sorted().collect(Collectors.toList());
-            if (sortedEvents.get(0).getType().equals(CategoryDeleted.class)){
-
+        for (List<CategoryEvent> eventGroup :
+                map.values()) {
+            Collections.sort(eventGroup);
+            CategoryEvent lastEvent = eventGroup.get(eventGroup.size() - 1);
+            if (lastEvent.getType().equals(CategoryDeleted.class)){
+                return false;
             }
-        });
+        }
         return true;
     }
 
-    private boolean isExistsSameName(String name){
-        Optional<CategoryEvent> optional = eventRepository.findFirstByCategoryNameOrderByDomainVersionDesc(name);
-        if (optional.isEmpty()){
+    private boolean isExistsSameName(Long domainId, String name){
+        Collection<CategoryEvent> allEvents = eventRepository.findAllByCategoryName(name);
+        if (allEvents.isEmpty()){
             return false;
         }
-        CategoryEvent categoryEvent = optional.get();
-        if (categoryEvent.getType().equals(CategoryDeleted.class)){
-            return false;
+        Map<Long, List<CategoryEvent>> eventMap = allEvents.stream().filter(e -> !e.getDomainId().equals(domainId)).collect(Collectors.groupingBy(CategoryEvent::getDomainId));
+        for (List<CategoryEvent> eventGroup :
+                eventMap.values()) {
+            Collections.sort(eventGroup);
+            CategoryEvent lastEvent = eventGroup.get(eventGroup.size() - 1);
+            return !lastEvent.getType().equals(CategoryDeleted.class) && lastEvent.getCategoryName().equals(name);
         }
         return true;
     }
