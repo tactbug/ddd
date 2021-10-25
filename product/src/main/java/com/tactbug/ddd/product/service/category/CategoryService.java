@@ -8,6 +8,7 @@ import com.tactbug.ddd.product.domain.category.command.CategoryCommand;
 import com.tactbug.ddd.product.domain.category.command.CreateCategory;
 import com.tactbug.ddd.product.domain.category.event.CategoryEvent;
 import com.tactbug.ddd.product.outbound.publisher.EventPublisher;
+import com.tactbug.ddd.product.outbound.publisher.EventTopics;
 import com.tactbug.ddd.product.outbound.repository.jpa.category.CategoryRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,7 +24,7 @@ import java.util.Optional;
  * @Time 2021/10/5 17:22
  */
 @Service
-@Transactional
+@Transactional(rollbackFor = Throwable.class)
 public class CategoryService {
 
     @Resource
@@ -45,6 +46,7 @@ public class CategoryService {
         List<CategoryEvent> events = category.createCategory(CATEGORY_ID_UTIL, categoryRepository, createCategory.operator());
         category.check();
         categoryRepository.create(events, category);
+        eventPublisher.publish(events, EventTopics.CATEGORY);
         return category;
     }
 
@@ -56,6 +58,7 @@ public class CategoryService {
         if (!events.isEmpty()){
             categoryRepository.update(events);
         }
+        eventPublisher.publish(events, EventTopics.CATEGORY);
         return category;
     }
 
@@ -67,6 +70,7 @@ public class CategoryService {
             List<CategoryEvent> events = category.delete(CATEGORY_ID_UTIL, categoryCommand.deleteCategory(), categoryRepository);
             categoryRepository.delete(category, events);
             optional = Optional.of(category);
+            eventPublisher.publish(events, EventTopics.CATEGORY);
         }
         return optional;
     }

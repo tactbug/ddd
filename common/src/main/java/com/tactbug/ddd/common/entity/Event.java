@@ -18,7 +18,7 @@ public class Event<T extends BaseDomain> extends BaseDomain {
     protected Integer domainVersion;
     protected Long operator;
     protected String data;
-    protected boolean publishTag;
+    protected boolean published;
 
     protected Event(Long id, T t, Long operator) {
         super(id);
@@ -47,8 +47,10 @@ public class Event<T extends BaseDomain> extends BaseDomain {
     }
 
     public void publish(){
-        publishTag = true;
-        update();
+        if (!published){
+            published = true;
+            update();
+        }
     }
 
     @Override

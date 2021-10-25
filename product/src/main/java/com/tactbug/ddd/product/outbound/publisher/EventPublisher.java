@@ -7,15 +7,18 @@ import com.tactbug.ddd.common.utils.SerializeUtil;
 import com.tactbug.ddd.product.assist.exception.TactProductException;
 import com.tactbug.ddd.product.domain.category.event.CategoryEvent;
 import com.tactbug.ddd.product.outbound.repository.jpa.category.CategoryEventRepository;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaFailureCallback;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
-@Slf4j
 public class EventPublisher {
 
     @Resource
@@ -23,33 +26,37 @@ public class EventPublisher {
     @Resource
     private CategoryEventRepository categoryEventRepository;
 
-    public void publishCategoryEvent(Event<? extends BaseDomain> event){
-        String json;
-        try {
-            json = SerializeUtil.objectToJson(event);
-        } catch (JsonProcessingException e) {
-            throw TactProductException.jsonException(e);
-        }
-        kafkaTemplate
-                .send(event.getClass().getName(), event.getDomainId(), json)
-                .addCallback(
-                        result -> {
-                            int retryTimes = 3;
-                            while (retryTimes > 0){
-                                try {
-                                    CategoryEvent currentEvent = categoryEventRepository.findById(event.getId())
-                                            .orElseThrow(() -> TactProductException.eventOperateError("广播事件[" + event.getId() + "]不存在"));
-                                    currentEvent.publish();
-                                    categoryEventRepository.save(currentEvent);
-                                    return;
-                                }catch (Exception e){
-                                    retryTimes --;
-                                }
-                            }
-                            log.error("广播事件[" + event + "]状态同步失败");
-                        },
-                        (KafkaFailureCallback<Integer, String>) ex ->
-                                log.error("分类变更事件[" + event + "]发布失败", ex)
-                );
+    public void publish(Collection<? extends Event<? extends BaseDomain>> events, EventTopics topic){
+        Map<Long, List<Event<? extends BaseDomain>>> eventMap = events.stream().collect(Collectors.groupingBy(Event::getDomainId));
+        eventMap.forEach((domainId, eventGroup) -> {
+
+            int retryTimes = 3;
+            Set<Long> ids = eventGroup.stream().map(Event::getId).collect(Collectors.toSet());
+            while (true){
+                try {
+                    List<CategoryEvent> currentEvents = categoryEventRepository.findAllById(ids);
+                    if (currentEvents.size() != ids.size()){
+                        throw TactProductException.eventOperateError("待同步事件数量异常, 待同步[" + ids.size() + "]件, 现有[" + currentEvents.size() + "]件");
+                    }
+                    currentEvents.forEach(Event::publish);
+                    categoryEventRepository.saveAll(currentEvents);
+                    break;
+                }catch (Exception e){
+                    retryTimes --;
+                    if (retryTimes < 1){
+                        throw TactProductException.eventOperateError("同步事件" + eventGroup + "状态失败");
+                    }
+                }
+            }
+
+            String json;
+            try {
+                json = SerializeUtil.objectToJson(eventGroup);
+            } catch (JsonProcessingException e) {
+                throw TactProductException.jsonException(e);
+            }
+            kafkaTemplate.send(topic.name(), domainId, json);
+        });
+
     }
 }
