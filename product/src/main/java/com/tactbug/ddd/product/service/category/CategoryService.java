@@ -7,6 +7,7 @@ import com.tactbug.ddd.product.domain.category.Category;
 import com.tactbug.ddd.product.domain.category.command.CategoryCommand;
 import com.tactbug.ddd.product.domain.category.command.CreateCategory;
 import com.tactbug.ddd.product.domain.category.event.CategoryEvent;
+import com.tactbug.ddd.product.outbound.publisher.EventPublisher;
 import com.tactbug.ddd.product.outbound.repository.jpa.category.CategoryRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +28,8 @@ public class CategoryService {
 
     @Resource
     private CategoryRepository categoryRepository;
+    @Resource
+    private EventPublisher eventPublisher;
 
     private static final IdUtil CATEGORY_ID_UTIL = IdUtil.getOrGenerate(
             TactProductApplication.APPLICATION_NAME, Category.class, 50000, 5000, 10000

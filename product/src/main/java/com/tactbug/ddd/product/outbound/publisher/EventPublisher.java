@@ -23,7 +23,7 @@ public class EventPublisher {
     @Resource
     private CategoryEventRepository categoryEventRepository;
 
-    public void publish(Event<? extends BaseDomain> event){
+    public void publishCategoryEvent(Event<? extends BaseDomain> event){
         String json;
         try {
             json = SerializeUtil.objectToJson(event);
