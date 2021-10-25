@@ -3,3 +3,4 @@ server:
 spring:
   webflux:
     base-path: product
+

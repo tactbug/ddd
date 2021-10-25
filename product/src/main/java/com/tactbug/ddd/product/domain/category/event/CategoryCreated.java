@@ -19,8 +19,8 @@ import java.util.Objects;
 @Entity
 public class CategoryCreated extends CategoryEvent {
 
-    public CategoryCreated(Long id, Category category, Long operator) {
-        super(id, category, operator);
+    public CategoryCreated(Long eventId, Category category, Long operator) {
+        super(eventId, category, operator);
         assembleData(category);
         checkData();
     }
@@ -38,7 +38,7 @@ public class CategoryCreated extends CategoryEvent {
             category.setRemark(dataMap.get("remark").toString());
             category.setParentId(Long.valueOf(dataMap.get("parentId").toString()));
         } catch (Exception e) {
-            throw TactProductException.replyError("[" + category.getId() + "]新增数据异常");
+            throw TactProductException.replayError("[" + category.getId() + "]新增数据异常");
         }
     }
 

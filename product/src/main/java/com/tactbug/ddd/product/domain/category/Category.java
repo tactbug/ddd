@@ -114,7 +114,7 @@ public class Category extends BaseDomain {
             events.addAll(
                     parent.addChildren(
                             idUtil,
-                            Collections.singleton(this),
+                            Arrays.asList(this),
                             categoryChangeParent.operator(),
                             categoryRepository
                     )
@@ -138,7 +138,7 @@ public class Category extends BaseDomain {
                 events.addAll(c.changeParent(idUtil, categoryChangeParent, categoryRepository));
                 childrenIds.add(c.id);
                 update();
-                events.add(new CategoryChildrenAdded(id, this, Collections.singletonList(c.id), operator));
+                events.add(new CategoryChildrenAdded(idUtil.getId(), this, Collections.singletonList(c.id), operator));
             });
         }
         return events;

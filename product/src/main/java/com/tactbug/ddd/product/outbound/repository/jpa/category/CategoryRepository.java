@@ -28,6 +28,7 @@ public class CategoryRepository {
     @Resource
     private CategoryEventRepository eventRepository;
 
+    @Lock(value = LockModeType.PESSIMISTIC_WRITE)
     public void create(Collection<CategoryEvent> events, Category category){
         if (isExistsSameName(category.getId(), category.getName())){
             throw TactProductException.resourceOperateError("分类[" + category + "]已经存在");
@@ -111,7 +112,7 @@ public class CategoryRepository {
         return categoryList;
     }
 
-    @Lock(value = LockModeType.PESSIMISTIC_READ)
+    @Lock(value = LockModeType.PESSIMISTIC_WRITE)
     public void updateName(Collection<CategoryEvent> categoryEvents){
         Map<Long, List<CategoryEvent>> eventMap = categoryEvents.stream().collect(Collectors.groupingBy(CategoryEvent::getDomainId));
         eventMap.forEach((id, events) -> {
@@ -179,14 +180,18 @@ public class CategoryRepository {
         if (allEvents.isEmpty()){
             return false;
         }
-        Map<Long, List<CategoryEvent>> eventMap = allEvents.stream().filter(e -> !e.getDomainId().equals(domainId)).collect(Collectors.groupingBy(CategoryEvent::getDomainId));
-        for (List<CategoryEvent> eventGroup :
-                eventMap.values()) {
-            Collections.sort(eventGroup);
-            CategoryEvent lastEvent = eventGroup.get(eventGroup.size() - 1);
-            return !lastEvent.getType().equals(CategoryDeleted.class) && lastEvent.getCategoryName().equals(name);
+        Set<Long> beCheckedIds = allEvents.stream().map(CategoryEvent::getDomainId).filter(id -> !id.equals(domainId)).collect(Collectors.toSet());
+        Map<Long, List<CategoryEvent>> eventMap = eventRepository.findAllByDomainIdIn(beCheckedIds).stream().collect(Collectors.groupingBy(CategoryEvent::getDomainId));
+
+        for (Map.Entry<Long, List<CategoryEvent>> entry:
+             eventMap.entrySet()) {
+            List<CategoryEvent> sortedList = entry.getValue().stream().sorted().collect(Collectors.toList());
+            CategoryEvent lastEvent = sortedList.get(sortedList.size() - 1);
+            if (!lastEvent.getType().equals(CategoryDeleted.class) && lastEvent.getCategoryName().equals(name)){
+                return true;
+            }
         }
-        return true;
+        return false;
     }
 
     private void checkEvents(Collection<CategoryEvent> events){

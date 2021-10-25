@@ -2,8 +2,6 @@ package com.tactbug.ddd.common.entity;
 
 import javax.persistence.Column;
 import javax.persistence.MappedSuperclass;
-import javax.persistence.Transient;
-import java.time.ZonedDateTime;
 import java.util.Objects;
 
 /**
@@ -20,6 +18,7 @@ public class Event<T extends BaseDomain> extends BaseDomain {
     protected Integer domainVersion;
     protected Long operator;
     protected String data;
+    protected boolean publishTag;
 
     protected Event(Long id, T t, Long operator) {
         super(id);
@@ -45,6 +44,11 @@ public class Event<T extends BaseDomain> extends BaseDomain {
             baseDomain.setCreateTime(createTime);
         }
         baseDomain.setUpdateTime(createTime);
+    }
+
+    public void publish(){
+        publishTag = true;
+        update();
     }
 
     @Override

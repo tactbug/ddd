@@ -20,7 +20,11 @@ public class TactProductException extends RuntimeException{
         return new TactProductException("资源操作异常", message);
     }
 
-    public static TactProductException replyError(String message){
+    public static TactProductException replayError(String message){
         return new TactProductException("对象重放异常", message);
+    }
+
+    public static TactProductException eventOperateError(String message){
+        return new TactProductException("事件操作异常", message);
     }
 }

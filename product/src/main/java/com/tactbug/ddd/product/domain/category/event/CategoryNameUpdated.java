@@ -2,7 +2,6 @@ package com.tactbug.ddd.product.domain.category.event;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.tactbug.ddd.common.entity.EventType;
 import com.tactbug.ddd.common.utils.SerializeUtil;
 import com.tactbug.ddd.product.domain.category.Category;
 import com.tactbug.ddd.product.assist.exception.TactProductException;
@@ -19,8 +18,8 @@ import java.util.Objects;
  */
 @Entity
 public class CategoryNameUpdated extends CategoryEvent {
-    public CategoryNameUpdated(Long id, Category category, Long operator) {
-        super(id, category, operator);
+    public CategoryNameUpdated(Long eventId, Category category, Long operator) {
+        super(eventId, category, operator);
         assembleData(category);
         checkData();
     }
@@ -36,7 +35,7 @@ public class CategoryNameUpdated extends CategoryEvent {
             });
             category.setName(dataMap.get("name").toString());
         } catch (Exception e) {
-            throw TactProductException.replyError("[" + category.getId() + "]名称数据异常");
+            throw TactProductException.replayError("[" + category.getId() + "]名称数据异常");
         }
     }
 

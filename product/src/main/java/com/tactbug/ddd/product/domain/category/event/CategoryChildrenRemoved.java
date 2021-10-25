@@ -11,8 +11,8 @@ import java.util.*;
 
 @Entity
 public class CategoryChildrenRemoved extends CategoryEvent{
-    public CategoryChildrenRemoved(Long id, Category category, Collection<Long> childrenIds, Long operator) {
-        super(id, category, operator);
+    public CategoryChildrenRemoved(Long eventId, Category category, Collection<Long> childrenIds, Long operator) {
+        super(eventId, category, operator);
         assembleData(category, childrenIds);
         checkData(category);
     }
@@ -30,7 +30,7 @@ public class CategoryChildrenRemoved extends CategoryEvent{
             });
             category.getChildrenIds().removeAll(childrenIds);
         } catch (Exception e) {
-            throw TactProductException.replyError("[" + category.getId() + "]子分类数据异常");
+            throw TactProductException.replayError("[" + category.getId() + "]子分类数据异常");
         }
     }
 

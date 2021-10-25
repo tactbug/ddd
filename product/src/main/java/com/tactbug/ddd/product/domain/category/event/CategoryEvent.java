@@ -18,8 +18,8 @@ public class CategoryEvent extends Event<Category> {
     @Column(name = "type")
     protected Class<? extends CategoryEvent> type;
 
-    public CategoryEvent(Long id, Category category, Long operator){
-        super(id, category, operator);
+    public CategoryEvent(Long eventId, Category category, Long operator){
+        super(eventId, category, operator);
         this.categoryName = category.getName();
         this.type = this.getClass();
     }
