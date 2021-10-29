@@ -15,13 +15,10 @@ import javax.persistence.*;
 public class CategoryEvent extends Event<Category> {
 
     private String categoryName;
-    @Column(name = "type")
-    protected Class<? extends CategoryEvent> type;
 
     public CategoryEvent(Long eventId, Category category, Long operator){
         super(eventId, category, operator);
         this.categoryName = category.getName();
-        this.type = this.getClass();
     }
 
     public CategoryEvent() {

@@ -10,14 +10,14 @@ import javax.persistence.Entity;
 import java.util.*;
 
 @Entity
-public class CategoryChildrenRemoved extends CategoryEvent{
-    public CategoryChildrenRemoved(Long eventId, Category category, Collection<Long> childrenIds, Long operator) {
+public class CategoryChildRemoved extends CategoryEvent{
+    public CategoryChildRemoved(Long eventId, Category category, Long childId, Long operator) {
         super(eventId, category, operator);
-        assembleData(category, childrenIds);
-        checkData(category);
+        assembleData(category, childId);
+        checkData();
     }
 
-    public CategoryChildrenRemoved() {
+    public CategoryChildRemoved() {
         super();
     }
 
@@ -34,10 +34,10 @@ public class CategoryChildrenRemoved extends CategoryEvent{
         }
     }
 
-    private void assembleData(Category category, Collection<Long> childrenIds){
+    private void assembleData(Category category, Long childId){
         Map<String, Object> map = new HashMap<>();
         map.put("id", category.getId());
-        map.put("childrenIds", childrenIds);
+        map.put("childId", childId);
         try {
             data = SerializeUtil.mapToString(map);
         } catch (JsonProcessingException e) {
@@ -45,7 +45,7 @@ public class CategoryChildrenRemoved extends CategoryEvent{
         }
     }
 
-    private void checkData(Category category){
+    private void checkData(){
         super.check();
         Map<String, Object> data;
         try {
@@ -57,16 +57,8 @@ public class CategoryChildrenRemoved extends CategoryEvent{
         if (Objects.isNull(data.get("id")) || !SerializeUtil.isNumber(data.get("id").toString())){
             throw new IllegalStateException("商品分类溯源事件[" + getId() + "]聚合ID状态异常");
         }
-        if (Objects.nonNull(data.get("childrenIds"))){
-            try {
-                HashSet<Long> childrenIds = SerializeUtil.jsonToObject(data.get("childrenIds").toString(), new TypeReference<HashSet<Long>>() {
-                });
-                if (category.getChildrenIds().stream().anyMatch(childrenIds::contains)){
-                    throw new IllegalStateException("子分类状态异常");
-                }
-            } catch (JsonProcessingException e) {
-                throw TactProductException.jsonException(e);
-            }
+        if (Objects.isNull(data.get("childId")) || !SerializeUtil.isNumber(data.get("childId").toString())){
+            throw new IllegalStateException("childId不正确[" + data.get("childId") + "]");
         }
     }
 }

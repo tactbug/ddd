@@ -27,7 +27,8 @@ public class Category extends BaseDomain {
     private Set<Long> childrenIds = new HashSet<>();
     private Set<Long> brandIds = new HashSet<>();
 
-    private static final Long ROOT_CATEGORY = 0L;
+    public static final Long ROOT_CATEGORY_ID = 0L;
+    public static final Category ROOT_CATEGORY = new Category(ROOT_CATEGORY_ID);
 
     private Category(Long id) {
         super(id);
@@ -62,122 +63,82 @@ public class Category extends BaseDomain {
         return category;
     }
 
-    public List<CategoryEvent> createCategory(IdUtil idUtil, CategoryRepository categoryRepository, Long operator) {
+    public List<CategoryEvent> createCategory(IdUtil idUtil, Category parent, Long operator) {
         List<CategoryEvent> events = new ArrayList<>();
-        if (!parentId.equals(ROOT_CATEGORY)){
-            Category parent = categoryRepository.getOne(parentId)
-                    .orElseThrow(() -> TactProductException.resourceOperateError("当前父分类[" + parentId + "]不存在"));
-            events.addAll(parent.addChildren(idUtil, Collections.singletonList(this), operator, categoryRepository));
+        if (!parent.equals(ROOT_CATEGORY)){
+            events.addAll(parent.addChild(idUtil, this, ROOT_CATEGORY, operator));
         }
         events.add(new CategoryCreated(idUtil.getId(), this, operator));
         check();
         return events;
     }
 
-    public CategoryNameUpdated updateName(IdUtil idUtil, CategoryUpdateName categoryUpdateName) {
-        if (!categoryUpdateName.name().equals(name)){
-            name = categoryUpdateName.name();
-            update();
-            check();
-            return new CategoryNameUpdated(idUtil.getId(), this, categoryUpdateName.operator());
-        }
-        return null;
-    }
-
-    public CategoryRemarkUpdated updateRemark(IdUtil idUtil, CategoryUpdateRemark categoryUpdateRemark){
-        if (!categoryUpdateRemark.remark().equals(remark)){
-            this.remark = categoryUpdateRemark.remark();
-            update();
-            check();
-            return new CategoryRemarkUpdated(idUtil.getId(), this, categoryUpdateRemark.operator());
-        }
-        return null;
-    }
-
-    public List<CategoryEvent> changeParent(IdUtil idUtil, CategoryChangeParent categoryChangeParent, CategoryRepository categoryRepository) {
+    public List<CategoryEvent> updateName(IdUtil idUtil, String name, Long operator) {
         List<CategoryEvent> events = new ArrayList<>();
-        if (categoryChangeParent.parentId().equals(parentId)){
+        if (!this.name.equals(name)){
+            this.name = name;
+            update();
+            check();
+            events.add(new CategoryNameUpdated(idUtil.getId(), this, operator));
+        }
+        return events;
+    }
+
+    public List<CategoryEvent> updateRemark(IdUtil idUtil, String remark, Long operator){
+        List<CategoryEvent> events = new ArrayList<>();
+        if (!this.remark.equals(remark)){
+            this.remark = remark;
+            update();
+            check();
+            events.add(new CategoryRemarkUpdated(idUtil.getId(), this, operator));
+        }
+        return events;
+    }
+
+    public List<CategoryEvent> changeParent(IdUtil idUtil, Category oldParent, Category newParent, Long operator) {
+        List<CategoryEvent> events = new ArrayList<>();
+        if (newParent.getId().equals(parentId)){
             return events;
         }
         // 原来的父分类移除当前子分类
-        if (!parentId.equals(ROOT_CATEGORY)){
-            Category currentParent = categoryRepository.getOne(parentId)
-                    .orElseThrow(() -> TactProductException.resourceOperateError("父分类[" + categoryChangeParent.parentId() + "]不存在"));
-            List<CategoryEvent> childrenRemoved = currentParent.removeChildren(idUtil, Collections.singleton(this), categoryChangeParent.operator());
+        if (!oldParent.equals(ROOT_CATEGORY)){
+            List<CategoryEvent> childrenRemoved = oldParent.removeChild(idUtil, this, operator);
             events.addAll(childrenRemoved);
         }
-        parentId = categoryChangeParent.parentId();
-        if (!categoryChangeParent.parentId().equals(ROOT_CATEGORY)){
+        if (!newParent.equals(ROOT_CATEGORY)){
             // 新的父分类添加子分类
-            Category parent = categoryRepository.getOne(categoryChangeParent.parentId())
-                    .orElseThrow(() -> TactProductException.resourceOperateError("父分类[" + categoryChangeParent.parentId() + "]不存在"));
-            events.addAll(
-                    parent.addChildren(
-                            idUtil,
-                            Arrays.asList(this),
-                            categoryChangeParent.operator(),
-                            categoryRepository
-                    )
-            );
+            events.addAll(newParent.addChild(idUtil, this, oldParent, operator));
         }
+        // 更新父分类
+        parentId = newParent.getId();
         update();
         check();
-        CategoryParentChanged categoryParentChanged = new CategoryParentChanged(idUtil.getId(), this, categoryChangeParent.operator());
+        CategoryParentChanged categoryParentChanged = new CategoryParentChanged(idUtil.getId(), this, operator);
         events.add(categoryParentChanged);
         return events;
     }
 
-    private List<CategoryEvent> addChildren(IdUtil idUtil, Collection<Category> children, Long operator, CategoryRepository categoryRepository){
+    private List<CategoryEvent> addChild(IdUtil idUtil, Category child, Category oldParent, Long operator){
         List<CategoryEvent> events = new ArrayList<>();
-        if (!childrenIds.isEmpty()){
-            children.removeIf(c -> childrenIds.contains(c.getId()));
+        if (childrenIds.contains(child.id)){
+            return events;
         }
-        if (!children.isEmpty()){
-            children.forEach(c -> {
-                CategoryChangeParent categoryChangeParent = new CategoryChangeParent(c.id, id, operator);
-                events.addAll(c.changeParent(idUtil, categoryChangeParent, categoryRepository));
-                childrenIds.add(c.id);
-                update();
-                events.add(new CategoryChildrenAdded(idUtil.getId(), this, Collections.singletonList(c.id), operator));
-            });
-        }
+        events.addAll(child.changeParent(idUtil, oldParent, this, operator));
+        childrenIds.add(child.id);
+        update();
+        events.add(new CategoryChildAdded(idUtil.getId(), this, child.id, operator));
         return events;
     }
 
-    private List<CategoryEvent> removeChildren(IdUtil idUtil, Collection<Category> children, Long operator){
+    private List<CategoryEvent> removeChild(IdUtil idUtil, Category child, Long operator){
         List<CategoryEvent> events = new ArrayList<>();
-        if (children.isEmpty()){
+        if (!child.parentId.equals(id) && !childrenIds.contains(child.id)){
             return events;
         }
-        if (children.stream().map(Category::getParentId).distinct().count() != 1){
-            throw new IllegalStateException("子分类状态异常");
-        }
-        List<Long> removeChildrenIds = new ArrayList<>();
-        children.forEach(c -> {
-            if (!c.parentId.equals(id) || !childrenIds.contains(c.id)){
-                throw new IllegalStateException("父子分类不匹配[" + this + "], [" + c +"]");
-            }
-            childrenIds.remove(c.id);
-            removeChildrenIds.add(c.id);
-        });
+        childrenIds.remove(child.id);
         update();
         check();
-        return Collections.singletonList(new CategoryChildrenRemoved(idUtil.getId(), this, removeChildrenIds, operator));
-    }
-
-    public List<CategoryEvent> update(CategoryCommand categoryCommand, IdUtil eventIdUtil, CategoryRepository categoryRepository){
-        List<CategoryEvent> events = new ArrayList<>();
-        if (Objects.nonNull(categoryCommand.getName()) && !categoryCommand.getName().equals(name)){
-            events.add(updateName(eventIdUtil, categoryCommand.updateName()));
-        }
-        if (Objects.nonNull(categoryCommand.getRemark()) && !categoryCommand.getRemark().equals(remark)){
-            events.add(updateRemark(eventIdUtil, categoryCommand.updateRemark()));
-        }
-        if (Objects.nonNull(categoryCommand.getParentId()) && !categoryCommand.getParentId().equals(parentId)){
-            CategoryChangeParent categoryChangeParent = categoryCommand.changeParent();
-            events.addAll(changeParent(eventIdUtil, categoryChangeParent, categoryRepository));
-        }
-        check();
+        events.add(new CategoryChildRemoved(idUtil.getId(), this, child.getId(), operator));
         return events;
     }
 
@@ -186,10 +147,10 @@ public class Category extends BaseDomain {
             throw new UnsupportedOperationException("该分类下还有未删除的子分类");
         }
         List<CategoryEvent> events = new ArrayList<>();
-        if (!parentId.equals(ROOT_CATEGORY)){
+        if (!parentId.equals(ROOT_CATEGORY_ID)){
             Category parent = categoryRepository.getOne(parentId)
                     .orElseThrow(() -> TactProductException.resourceOperateError("父分类[" + parentId + "]不存在"));
-            events.addAll(parent.removeChildren(idUtil, Collections.singleton(this), deleteCategory.operator()));
+            events.addAll(parent.removeChild(idUtil, this, deleteCategory.operator()));
         }
         update();
         events.add(new CategoryDeleted(idUtil.getId(), this, deleteCategory.operator()));
@@ -212,8 +173,8 @@ public class Category extends BaseDomain {
             }
             switch (events.get(i)){
                 case CategoryCreated c -> c.replay(snapshot);
-                case CategoryChildrenAdded c -> c.replay(snapshot);
-                case CategoryChildrenRemoved c -> c.replay(snapshot);
+                case CategoryChildAdded c -> c.replay(snapshot);
+                case CategoryChildRemoved c -> c.replay(snapshot);
                 case CategoryNameUpdated c -> c.replay(snapshot);
                 case CategoryRemarkUpdated c -> c.replay(snapshot);
                 case CategoryParentChanged c -> c.replay(snapshot);

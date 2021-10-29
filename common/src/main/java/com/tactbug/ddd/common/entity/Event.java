@@ -17,6 +17,8 @@ public class Event<T extends BaseDomain> extends BaseDomain {
     @Column(name = "domain_version")
     protected Integer domainVersion;
     protected Long operator;
+    protected Class<?> eventType;
+    protected Class<? extends BaseDomain> domainType;
     protected String data;
     protected boolean published;
 
@@ -25,6 +27,8 @@ public class Event<T extends BaseDomain> extends BaseDomain {
         this.domainId = t.getId();
         this.domainVersion = t.getVersion();
         this.operator = operator;
+        this.eventType = this.getClass();
+        this.domainType = t.getClass();
         check();
     }
 
@@ -90,4 +94,11 @@ public class Event<T extends BaseDomain> extends BaseDomain {
         return data;
     }
 
+    public Class<?> getEventType() {
+        return eventType;
+    }
+
+    public Class<? extends BaseDomain> getDomainType() {
+        return domainType;
+    }
 }

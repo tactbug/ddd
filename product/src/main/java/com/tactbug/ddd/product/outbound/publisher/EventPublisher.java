@@ -4,10 +4,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.tactbug.ddd.common.entity.BaseDomain;
 import com.tactbug.ddd.common.entity.Event;
 import com.tactbug.ddd.common.utils.SerializeUtil;
+import com.tactbug.ddd.product.TactProductApplication;
 import com.tactbug.ddd.product.assist.exception.TactProductException;
 import com.tactbug.ddd.product.domain.category.event.CategoryEvent;
 import com.tactbug.ddd.product.outbound.repository.jpa.category.CategoryEventRepository;
-import org.springframework.kafka.core.KafkaFailureCallback;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
@@ -22,13 +22,20 @@ import java.util.stream.Collectors;
 public class EventPublisher {
 
     @Resource
-    private KafkaTemplate<Long, String> kafkaTemplate;
+    private KafkaTemplate<String, String> kafkaTemplate;
     @Resource
     private CategoryEventRepository categoryEventRepository;
 
     public void publish(Collection<? extends Event<? extends BaseDomain>> events, EventTopics topic){
         Map<Long, List<Event<? extends BaseDomain>>> eventMap = events.stream().collect(Collectors.groupingBy(Event::getDomainId));
         eventMap.forEach((domainId, eventGroup) -> {
+
+            String json;
+            try {
+                json = SerializeUtil.objectToJson(eventGroup);
+            } catch (JsonProcessingException e) {
+                throw TactProductException.jsonException(e);
+            }
 
             int retryTimes = 3;
             Set<Long> ids = eventGroup.stream().map(Event::getId).collect(Collectors.toSet());
@@ -49,13 +56,7 @@ public class EventPublisher {
                 }
             }
 
-            String json;
-            try {
-                json = SerializeUtil.objectToJson(eventGroup);
-            } catch (JsonProcessingException e) {
-                throw TactProductException.jsonException(e);
-            }
-            kafkaTemplate.send(topic.name(), domainId, json);
+            kafkaTemplate.send(TactProductApplication.APPLICATION_NAME + EventTopics.CATEGORY.name(), "" + domainId, json);
         });
 
     }

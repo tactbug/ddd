@@ -28,12 +28,6 @@ public class CategoryController {
         return Result.success(CategoryVo.generate(category));
     }
 
-    @PutMapping
-    public Result<CategoryVo> update(@RequestBody CategoryCommand categoryCommand){
-        Category category = categoryService.update(categoryCommand);
-        return Result.success(CategoryVo.generate(category));
-    }
-
     @DeleteMapping
     public Result<CategoryVo> delete(@RequestBody CategoryCommand categoryCommand){
         Category category = categoryService.delete(categoryCommand)

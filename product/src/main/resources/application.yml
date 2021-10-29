@@ -3,4 +3,7 @@ server:
 spring:
   webflux:
     base-path: product
-
+  kafka:
+    client-id: product
+    consumer:
+      group-id: "product"

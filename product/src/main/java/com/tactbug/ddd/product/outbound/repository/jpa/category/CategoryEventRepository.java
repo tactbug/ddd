@@ -19,7 +19,7 @@ public interface CategoryEventRepository extends JpaRepository<CategoryEvent, Lo
     Optional<CategoryEvent> findFirstByDomainIdOrderByDomainVersionDesc(Long domainId);
     Collection<CategoryEvent> findAllByCategoryName(String categoryName);
     List<CategoryEvent> findAllByDomainIdIn(Collection<Long> domainId);
-    boolean existsByDomainIdAndType(Long domainId, Class<? extends CategoryEvent> type);
-    boolean existsAllByDomainIdInAndTypeNot(Collection<Long> domainId, Class<? extends CategoryEvent> type);
-    boolean existsByDomainIdInAndType(Collection<Long> domainId, Class<? extends CategoryEvent> type);
+    boolean existsByDomainIdAndEventType(Long domainId, Class<? extends CategoryEvent> type);
+    boolean existsAllByDomainIdInAndEventTypeNot(Collection<Long> domainId, Class<? extends CategoryEvent> type);
+    boolean existsByDomainIdInAndEventType(Collection<Long> domainId, Class<? extends CategoryEvent> type);
 }

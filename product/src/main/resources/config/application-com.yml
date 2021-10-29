@@ -11,5 +11,4 @@ spring:
     host: 10.1.12.100
     port: 6379
   kafka:
-    client-id: product
     bootstrap-servers: 10.1.12.100:9092

@@ -49,7 +49,7 @@ public class CategoryRepository {
         }
         checkEvents(events);
         events.stream()
-                .collect(Collectors.groupingBy(CategoryEvent::getType))
+                .collect(Collectors.groupingBy(CategoryEvent::getEventType))
                 .forEach((type, eventGroup) -> {
                     if (CategoryNameUpdated.class.equals(type)) {
                         updateName(eventGroup);
@@ -72,6 +72,9 @@ public class CategoryRepository {
     }
 
     public Optional<Category> getOne(Long id){
+        if (id.equals(Category.ROOT_CATEGORY_ID)){
+            return Optional.of(Category.ROOT_CATEGORY);
+        }
         if (isDelete(id)){
             throw TactProductException.resourceOperateError("分类[" + id + "]已被删除");
         }
@@ -139,11 +142,11 @@ public class CategoryRepository {
     }
 
     private boolean isDelete(Long id){
-        return eventRepository.existsByDomainIdAndType(id, CategoryDeleted.class);
+        return eventRepository.existsByDomainIdAndEventType(id, CategoryDeleted.class);
     }
 
     private boolean isDeleteAny(Collection<Long> ids){
-        return eventRepository.existsByDomainIdInAndType(ids, CategoryDeleted.class);
+        return eventRepository.existsByDomainIdInAndEventType(ids, CategoryDeleted.class);
     }
 
     private boolean isExists(Long id){
@@ -152,7 +155,7 @@ public class CategoryRepository {
             return false;
         }
         CategoryEvent categoryEvent = optional.get();
-        if (categoryEvent.getType().equals(CategoryDeleted.class)){
+        if (categoryEvent.getEventType().equals(CategoryDeleted.class)){
             return false;
         }
         return true;
@@ -168,7 +171,7 @@ public class CategoryRepository {
                 map.values()) {
             Collections.sort(eventGroup);
             CategoryEvent lastEvent = eventGroup.get(eventGroup.size() - 1);
-            if (lastEvent.getType().equals(CategoryDeleted.class)){
+            if (lastEvent.getEventType().equals(CategoryDeleted.class)){
                 return false;
             }
         }
@@ -187,7 +190,7 @@ public class CategoryRepository {
              eventMap.entrySet()) {
             List<CategoryEvent> sortedList = entry.getValue().stream().sorted().collect(Collectors.toList());
             CategoryEvent lastEvent = sortedList.get(sortedList.size() - 1);
-            if (!lastEvent.getType().equals(CategoryDeleted.class) && lastEvent.getCategoryName().equals(name)){
+            if (!lastEvent.getEventType().equals(CategoryDeleted.class) && lastEvent.getCategoryName().equals(name)){
                 return true;
             }
         }

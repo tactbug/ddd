@@ -27,4 +27,8 @@ public class TactProductException extends RuntimeException{
     public static TactProductException eventOperateError(String message){
         return new TactProductException("事件操作异常", message);
     }
+
+    public static TactProductException unknowEnumError(String message){
+        return new TactProductException("不支持的枚举类型", message);
+    }
 }
