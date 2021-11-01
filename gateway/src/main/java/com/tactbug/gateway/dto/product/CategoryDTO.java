@@ -12,6 +12,7 @@ import org.springframework.beans.BeanUtils;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -29,6 +30,7 @@ public class CategoryDTO extends BaseDomain {
     private List<CategoryDTO> children;
     @ManyToOne
     private CategoryDTO parent;
+    private boolean deleted;
 
     public static CategoryDTO generate(Category category){
         CategoryDTO categoryDTO = new CategoryDTO();
@@ -36,11 +38,16 @@ public class CategoryDTO extends BaseDomain {
         return categoryDTO;
     }
 
+    public void delete(){
+        deleted = true;
+    }
+
     public Category convertToCategory(){
         Category category = new Category();
         BeanUtils.copyProperties(this, category);
         category.setChildrenIds(children.stream().map(CategoryDTO::getId).collect(Collectors.toSet()));
         category.setParentId(parent.id);
+        return category;
     }
 
     @Override
