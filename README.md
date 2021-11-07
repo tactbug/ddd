@@ -12,5 +12,5 @@
 - springboot 2.5.6 统一开发框架
 - postgresql 13.3 事件存储核心库/查询核心库
 - redis 6.2.6 聚合快照, 用来加速对象重放
-- kafka 3.0.0 领域事件发布
+- kafka 3.0.0 领域事件发布 
 - tact-id 一个自用的分布式ID生成工具, https://github.com/tactbug/tact-id
