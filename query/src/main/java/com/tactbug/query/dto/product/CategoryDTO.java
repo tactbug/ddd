@@ -1,4 +1,4 @@
-package com.tactbug.gateway.dto.product;
+package com.tactbug.query.dto.product;
 
 import com.tactbug.ddd.common.entity.BaseDomain;
 import com.tactbug.ddd.product.domain.category.Category;
@@ -12,7 +12,6 @@ import org.springframework.beans.BeanUtils;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;

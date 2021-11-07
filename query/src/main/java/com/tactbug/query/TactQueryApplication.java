@@ -1,11 +1,11 @@
-package com.tactbug.gateway;
+package com.tactbug.query;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class TactGatewayApplication {
+public class TactQueryApplication {
     public static void main(String[] args) {
-        SpringApplication.run(TactGatewayApplication.class, args);
+        SpringApplication.run(TactQueryApplication.class, args);
     }
 }

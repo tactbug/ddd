@@ -1,4 +1,4 @@
-package com.tactbug.gateway.replay;
+package com.tactbug.query.replay;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;

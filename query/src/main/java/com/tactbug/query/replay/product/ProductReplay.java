@@ -1,4 +1,4 @@
-package com.tactbug.gateway.replay.product;
+package com.tactbug.query.replay.product;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -6,11 +6,11 @@ import com.tactbug.ddd.common.utils.SerializeUtil;
 import com.tactbug.ddd.product.assist.exception.TactProductException;
 import com.tactbug.ddd.product.domain.category.Category;
 import com.tactbug.ddd.product.domain.category.event.*;
-import com.tactbug.gateway.dto.TopicEnum;
-import com.tactbug.gateway.dto.product.CategoryDTO;
-import com.tactbug.gateway.replay.EventRecord;
-import com.tactbug.gateway.replay.EventRecordRepository;
-import com.tactbug.gateway.replay.product.repository.CategoryDTORepository;
+import com.tactbug.query.dto.TopicEnum;
+import com.tactbug.query.dto.product.CategoryDTO;
+import com.tactbug.query.replay.EventRecord;
+import com.tactbug.query.replay.EventRecordRepository;
+import com.tactbug.query.replay.product.repository.CategoryDTORepository;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.kafka.support.KafkaHeaders;

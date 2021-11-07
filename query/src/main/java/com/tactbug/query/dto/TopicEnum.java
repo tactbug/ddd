@@ -1,4 +1,4 @@
-package com.tactbug.gateway.dto;
+package com.tactbug.query.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

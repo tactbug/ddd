@@ -1,4 +1,4 @@
-package com.tactbug.gateway.replay;
+package com.tactbug.query.replay;
 
 import com.tactbug.ddd.common.entity.BaseDomain;
 import com.tactbug.ddd.common.entity.Event;
