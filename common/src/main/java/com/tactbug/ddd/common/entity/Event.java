@@ -2,6 +2,7 @@ package com.tactbug.ddd.common.entity;
 
 import javax.persistence.Column;
 import javax.persistence.MappedSuperclass;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -17,8 +18,6 @@ public class Event<T extends BaseDomain> extends BaseDomain {
     @Column(name = "domain_version")
     protected Integer domainVersion;
     protected Long operator;
-    protected Class<?> eventType;
-    protected Class<? extends BaseDomain> domainType;
     protected String data;
     protected boolean published;
 
@@ -27,13 +26,19 @@ public class Event<T extends BaseDomain> extends BaseDomain {
         this.domainId = t.getId();
         this.domainVersion = t.getVersion();
         this.operator = operator;
-        this.eventType = this.getClass();
-        this.domainType = t.getClass();
         check();
     }
 
     public Event() {
         super();
+    }
+
+    public static void checkList(List<? extends Event<? extends BaseDomain>> list){
+        for (int i = 1; i < list.size(); i++) {
+            if (list.get(i).getDomainVersion() != list.get(i - 1).getDomainVersion() + 1){
+                throw new IllegalStateException("事件版本不匹配[" + list.get(i - 1).getDomainVersion() + "] -> [" + list.get(i).getDomainVersion() + "]");
+            }
+        }
     }
 
     public void check() {
@@ -94,11 +99,4 @@ public class Event<T extends BaseDomain> extends BaseDomain {
         return data;
     }
 
-    public Class<?> getEventType() {
-        return eventType;
-    }
-
-    public Class<? extends BaseDomain> getDomainType() {
-        return domainType;
-    }
 }

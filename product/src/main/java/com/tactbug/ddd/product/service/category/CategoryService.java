@@ -10,10 +10,12 @@ import com.tactbug.ddd.product.domain.category.event.CategoryEvent;
 import com.tactbug.ddd.product.outbound.publisher.EventPublisher;
 import com.tactbug.ddd.product.outbound.publisher.EventTopics;
 import com.tactbug.ddd.product.outbound.repository.jpa.category.CategoryRepository;
+import com.tactbug.ddd.product.query.ProductQuery;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -39,9 +41,8 @@ public class CategoryService {
     public Category createCategory(CreateCategory createCategory){
         Category parent = categoryRepository.getOne(createCategory.parentId())
                 .orElseThrow(() -> TactProductException.resourceOperateError("父分类[" + createCategory.parentId() + "]不存在"));
-        Category category = Category.generate(ID_UTIL.getId(), createCategory);
-        List<CategoryEvent> events = category.createCategory(ID_UTIL, parent, createCategory.operator());
-        category.check();
+        List<CategoryEvent> events = new ArrayList<>();
+        Category category = Category.generate(ID_UTIL, createCategory, events);
         categoryRepository.create(events, category);
         eventPublisher.publish(events, EventTopics.CATEGORY);
         return category;

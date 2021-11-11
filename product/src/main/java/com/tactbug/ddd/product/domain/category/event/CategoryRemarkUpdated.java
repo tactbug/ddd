@@ -34,6 +34,7 @@ public class CategoryRemarkUpdated extends CategoryEvent {
             HashMap<String, Object> dataMap = SerializeUtil.jsonToObject(data, new TypeReference<>() {
             });
             category.setRemark(dataMap.get("remark").toString());
+            category.setDeleted(false);
         } catch (Exception e) {
             throw TactProductException.replayError("[" + category.getId() + "]备注数据异常");
         }

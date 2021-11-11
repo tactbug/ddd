@@ -29,6 +29,15 @@ public class CategoryDeleted extends CategoryEvent {
         super();
     }
 
+    public void replay(Category category){
+        super.replay(category);
+        try {
+            category.setDeleted(true);
+        } catch (Exception e) {
+            throw TactProductException.replayError("[" + category.getId() + "]删除数据异常");
+        }
+    }
+
     private void assembleData(Category category) {
         Map<String, Object> map = new HashMap<>();
         map.put("id", category.getId());

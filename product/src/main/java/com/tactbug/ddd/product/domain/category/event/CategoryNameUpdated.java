@@ -34,6 +34,7 @@ public class CategoryNameUpdated extends CategoryEvent {
             HashMap<String, Object> dataMap = SerializeUtil.jsonToObject(data, new TypeReference<>() {
             });
             category.setName(dataMap.get("name").toString());
+            category.setDeleted(false);
         } catch (Exception e) {
             throw TactProductException.replayError("[" + category.getId() + "]名称数据异常");
         }

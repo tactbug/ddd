@@ -34,6 +34,7 @@ public class CategoryParentChanged extends CategoryEvent {
             HashMap<String, Object> dataMap = SerializeUtil.jsonToObject(data, new TypeReference<>() {
             });
             category.setParentId(Long.valueOf(dataMap.get("parentId").toString()));
+            category.setDeleted(false);
         } catch (Exception e) {
             throw TactProductException.replayError("[" + category.getId() + "]父分类数据异常");
         }

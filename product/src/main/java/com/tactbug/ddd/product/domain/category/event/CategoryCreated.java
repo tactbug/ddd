@@ -37,6 +37,7 @@ public class CategoryCreated extends CategoryEvent {
             category.setName(dataMap.get("name").toString());
             category.setRemark(dataMap.get("remark").toString());
             category.setParentId(Long.valueOf(dataMap.get("parentId").toString()));
+            category.setDeleted(false);
         } catch (Exception e) {
             throw TactProductException.replayError("[" + category.getId() + "]新增数据异常");
         }
