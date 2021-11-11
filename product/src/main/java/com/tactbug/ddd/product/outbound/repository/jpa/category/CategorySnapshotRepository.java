@@ -47,16 +47,7 @@ public class CategorySnapshotRepository {
         }
     }
 
-    public List<Category> findByIds(Collection<Long> ids){
-        List<Object> result = redisTemplate.opsForHash().multiGet(Category.class, new ArrayList<>(ids));
-        if (!result.isEmpty()){
-            try {
-                return SerializeUtil.jsonToObject(result.toString(), new TypeReference<>() {
-                });
-            } catch (JsonProcessingException e) {
-                throw TactProductException.jsonException(e);
-            }
-        }
-        return Collections.emptyList();
+    public void delete(Long id){
+        redisTemplate.opsForHash().delete(Category.class, id);
     }
 }

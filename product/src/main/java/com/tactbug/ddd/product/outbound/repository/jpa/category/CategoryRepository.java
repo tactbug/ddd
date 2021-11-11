@@ -3,6 +3,7 @@ package com.tactbug.ddd.product.outbound.repository.jpa.category;
 import com.tactbug.ddd.common.entity.Event;
 import com.tactbug.ddd.product.assist.exception.TactProductException;
 import com.tactbug.ddd.product.domain.category.Category;
+import com.tactbug.ddd.product.domain.category.CategorySituation;
 import com.tactbug.ddd.product.domain.category.event.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.repository.Lock;
@@ -26,6 +27,8 @@ public class CategoryRepository {
     private CategorySnapshotRepository snapshotRepository;
     @Resource
     private CategoryEventRepository eventRepository;
+    @Resource
+    private CategorySituationRepository situationRepository;
 
     public void execute(Collection<CategoryEvent> events){
         Map<Long, List<CategoryEvent>> eventMap = events.stream().collect(Collectors.groupingBy(CategoryEvent::getDomainId));
@@ -47,86 +50,103 @@ public class CategoryRepository {
 
     @Lock(value = LockModeType.PESSIMISTIC_WRITE)
     private void create(CategoryCreated categoryCreated){
-        if (isExistsSameName(categoryCreated.getDomainId(), categoryCreated.getCategoryName())){
-            throw TactProductException.resourceOperateError("分类[" + categoryCreated.getCategoryName() + "]已经存在");
-        }
         Category snapshot = new Category();
         snapshot.replay(Collections.singleton(categoryCreated));
+        if (isExistsSameName(snapshot.getName())){
+            throw TactProductException.resourceOperateError("分类[" + snapshot.getName() + "]已经存在");
+        }
         eventRepository.save(categoryCreated);
         snapshotRepository.save(snapshot);
+        syncSituation(categoryCreated, snapshot.getName());
     }
 
     private void updateName(CategoryNameUpdated categoryNameUpdated){
-        if (!isExists(categoryNameUpdated.getDomainId())){
-            throw TactProductException.resourceOperateError("分类[" + categoryNameUpdated.getDomainId() + "]不存在");
-        }
-        if (isExistsSameName(categoryNameUpdated.getDomainId(), categoryNameUpdated.getCategoryName())){
-            throw TactProductException.resourceOperateError("分类[" + categoryNameUpdated.getCategoryName() + "]已经存在");
+        checkExists(categoryNameUpdated.getDomainId());
+        Category category = getOne(categoryNameUpdated.getDomainId());
+        category.replay(Collections.singleton(categoryNameUpdated));
+        if (isExistsSameName(category.getName())){
+            throw TactProductException.resourceOperateError("分类[" + category.getName() + "]已经存在");
         }
         eventRepository.save(categoryNameUpdated);
+        syncSituation(categoryNameUpdated, category.getName());
     }
 
     private void updateRemark(CategoryRemarkUpdated categoryRemarkUpdated){
-        if (!isExists(categoryRemarkUpdated.getDomainId())){
-            throw TactProductException.resourceOperateError("分类[" + categoryRemarkUpdated.getDomainId() + "]不存在");
-        }
+        checkExists(categoryRemarkUpdated.getDomainId());
+        Category category = getOne(categoryRemarkUpdated.getDomainId());
+        category.replay(Collections.singleton(categoryRemarkUpdated));
         eventRepository.save(categoryRemarkUpdated);
+        syncSituation(categoryRemarkUpdated, category.getName());
     }
 
     private void changeParent(CategoryParentChanged categoryParentChanged){
-        if (!isExists(categoryParentChanged.getDomainId())){
-            throw TactProductException.resourceOperateError("分类[" + categoryParentChanged.getDomainId() + "]不存在");
-        }
+        checkExists(categoryParentChanged.getDomainId());
+        Category category = getOne(categoryParentChanged.getDomainId());
+        category.replay(Collections.singleton(categoryParentChanged));
         eventRepository.save(categoryParentChanged);
+        syncSituation(categoryParentChanged, category.getName());
     }
 
     private void delete(CategoryDeleted categoryDeleted){
         if (isDelete(categoryDeleted.getDomainId())){
             return;
         }
-        Category category = getOne(categoryDeleted.getDomainId())
-                .orElseThrow(() -> TactProductException.resourceOperateError("当前分类[" + categoryDeleted.getDomainId() + "]不存在"));
+        Category category = getOne(categoryDeleted.getDomainId());
         category.replay(Collections.singleton(categoryDeleted));
-        snapshotRepository.save(category);
+        snapshotRepository.delete(category.getId());
         eventRepository.save(categoryDeleted);
+        syncSituation(categoryDeleted, category.getName());
     }
 
-    public Optional<Category> getOne(Long id){
+    public Category getOne(Long id){
+        if (!isExists(id)){
+            throw TactProductException.resourceOperateError("分类[" + id + "]不存在或已删除");
+        }
         Category category = getSnapshot(id).orElse(new Category());
         List<CategoryEvent> events =
                 eventRepository.findAllByDomainIdAndDomainVersionGreaterThanOrderByDomainVersionAsc(id, category.getVersion());
-        if (isDelete(id)){
-            throw TactProductException.resourceOperateError("分类[" + id + "]已被删除");
-        }
-        if (!isExists(id)){
-            throw TactProductException.resourceOperateError("分类[" + id + "]不存在");
-        }
         category.replay(events);
-        return Optional.of(category);
+        return category;
     }
 
     private Optional<Category> getSnapshot(Long id){
         return snapshotRepository.findById(id);
     }
 
+    private void checkExists(Long id){
+        if (isDelete(id)){
+            throw TactProductException.resourceOperateError("分类[" + id + "]不存在或已删除");
+        }
+    }
+
     private boolean isDelete(Long id){
-        return eventRepository.existsByDomainIdAndEventType(id, CategoryDeleted.class);
+        Optional<CategorySituation> optional = situationRepository.findById(id);
+        return optional.isPresent() && optional.get().isDeleted();
     }
 
     private boolean isExists(Long id){
-        Optional<CategoryEvent> optional = eventRepository.findFirstByDomainIdOrderByDomainVersionDesc(id);
-        if (optional.isEmpty()){
-            return false;
-        }
-        CategoryEvent categoryEvent = optional.get();
-        if (categoryEvent instanceof CategoryDeleted){
-            return false;
-        }
-        return true;
+        Optional<CategorySituation> optional = situationRepository.findById(id);
+        return optional.isPresent() && !optional.get().isDeleted();
     }
 
-    private boolean isExistsSameName(Long domainId, String name){
-        return false;
+    private boolean isExistsSameName(String name){
+        return situationRepository.existsByCategoryNameAndDeletedIsTrue(name);
+    }
+
+    private void syncSituation(CategoryEvent event, String categoryName){
+        if (event instanceof CategoryCreated){
+            CategorySituation categorySituation = CategorySituation.generate(event, categoryName);
+            situationRepository.save(categorySituation);
+            return;
+        }
+        CategorySituation categorySituation = situationRepository.findById(event.getDomainId())
+                .orElseThrow(() -> TactProductException.resourceOperateError("分类[" + event.getDomainId() + "]状态错误"));
+        if (event instanceof CategoryDeleted){
+            categorySituation.delete(event);
+        }else {
+            categorySituation.update(event);
+        }
+        situationRepository.save(categorySituation);
     }
 
 }

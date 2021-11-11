@@ -6,6 +6,7 @@ import com.tactbug.ddd.product.assist.exception.TactProductException;
 import com.tactbug.ddd.product.domain.category.Category;
 import com.tactbug.ddd.product.domain.category.command.CategoryCommand;
 import com.tactbug.ddd.product.domain.category.command.CreateCategory;
+import com.tactbug.ddd.product.domain.category.command.DeleteCategory;
 import com.tactbug.ddd.product.domain.category.event.CategoryEvent;
 import com.tactbug.ddd.product.outbound.publisher.EventPublisher;
 import com.tactbug.ddd.product.outbound.publisher.EventTopics;
@@ -33,36 +34,33 @@ public class CategoryService {
     private CategoryRepository categoryRepository;
     @Resource
     private EventPublisher eventPublisher;
+    @Resource
+    private ProductQuery productQuery;
 
     private static final IdUtil ID_UTIL = IdUtil.getOrGenerate(
             TactProductApplication.APPLICATION_NAME, Category.class, 50000, 5000, 10000
     );
 
     public Category createCategory(CreateCategory createCategory){
-        Category parent = categoryRepository.getOne(createCategory.parentId())
-                .orElseThrow(() -> TactProductException.resourceOperateError("父分类[" + createCategory.parentId() + "]不存在"));
         List<CategoryEvent> events = new ArrayList<>();
         Category category = Category.generate(ID_UTIL, createCategory, events);
-        categoryRepository.create(events, category);
+        if (!category.getParentId().equals(Category.ROOT_CATEGORY_ID)){
+            categoryRepository.getOne(category.getParentId());
+        }
+        categoryRepository.execute(events);
         eventPublisher.publish(events, EventTopics.CATEGORY);
         return category;
     }
 
-
-    public Optional<Category> delete(CategoryCommand categoryCommand){
-        Optional<Category> optional = categoryRepository.getOne(categoryCommand.getId())
-                .or(Optional::empty);
-        if (optional.isPresent()){
-            Category category = optional.get();
-            List<CategoryEvent> events = category.delete(ID_UTIL, categoryCommand.deleteCategory(), categoryRepository);
-            categoryRepository.delete(category, events);
-            optional = Optional.of(category);
-            eventPublisher.publish(events, EventTopics.CATEGORY);
-        }
-        return optional;
+    public Category delete(DeleteCategory deleteCategory){
+        Category category = categoryRepository.getOne(deleteCategory.dimainId());
+        List<CategoryEvent> events = category.delete(ID_UTIL, deleteCategory, productQuery);
+        categoryRepository.execute(events);
+        eventPublisher.publish(events, EventTopics.CATEGORY);
+        return category;
     }
 
-    public Optional<Category> getById(Long id){
+    public Category getById(Long id){
         return categoryRepository.getOne(id);
     }
 

@@ -17,9 +17,6 @@ import java.util.Optional;
 public interface CategoryEventRepository extends JpaRepository<CategoryEvent, Long> {
     List<CategoryEvent> findAllByDomainIdAndDomainVersionGreaterThanOrderByDomainVersionAsc(Long domainId, Integer domainVersion);
     Optional<CategoryEvent> findFirstByDomainIdOrderByDomainVersionDesc(Long domainId);
-    Collection<CategoryEvent> findAllByCategoryName(String categoryName);
-    List<CategoryEvent> findAllByDomainIdIn(Collection<Long> domainId);
-    boolean existsByDomainIdAndEventType(Long domainId, Class<? extends CategoryEvent> type);
-    boolean existsAllByDomainIdInAndEventTypeNot(Collection<Long> domainId, Class<? extends CategoryEvent> type);
-    boolean existsByDomainIdInAndEventType(Collection<Long> domainId, Class<? extends CategoryEvent> type);
+    List<CategoryEvent> findAllByCategoryNameOrderByDomainVersionDesc(String categoryName);
+    List<CategoryEvent> findAllByDomainIdOrderByDomainVersionDesc(Long domainId);
 }

@@ -30,14 +30,12 @@ public class CategoryController {
 
     @DeleteMapping
     public Result<CategoryVo> delete(@RequestBody CategoryCommand categoryCommand){
-        Category category = categoryService.delete(categoryCommand)
-                .orElse(new Category());
+        Category category = categoryService.delete(categoryCommand.deleteCategory());
         return Result.success(CategoryVo.generate(category));
     }
 
-    @GetMapping
-    public Result<CategoryVo> getOne(Long id){
-        Optional<Category> optional = categoryService.getById(id);
-        return optional.map(category -> Result.success(CategoryVo.generate(category))).orElseGet(Result::succeed);
+    @PutMapping
+    public Result<CategoryVo> update(@RequestBody CategoryCommand categoryCommand){
+        return null;
     }
 }

@@ -9,16 +9,13 @@ import javax.persistence.*;
 @Entity
 @Table(name = "category_event",
         uniqueConstraints = {@UniqueConstraint(columnNames = {"domain_id", "domain_version"})},
-        indexes = {@Index(columnList = "domain_id"), @Index(columnList = "categoryName")}
+        indexes = {@Index(columnList = "domain_id")}
 )
 @Getter
 public class CategoryEvent extends Event<Category> {
 
-    private String categoryName;
-
     public CategoryEvent(Long eventId, Category category, Long operator){
         super(eventId, category, operator);
-        this.categoryName = category.getName();
     }
 
     public CategoryEvent() {

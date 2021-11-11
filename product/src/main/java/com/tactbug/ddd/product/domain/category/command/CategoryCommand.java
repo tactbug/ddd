@@ -20,7 +20,6 @@ public class CategoryCommand extends BaseCommand {
     private String remark;
     private Long parentId;
     private Long operator = 10000L;
-    private Collection<Long> childrenIds;
 
     public CreateCategory createCategory(){
         checkCreateCategory();
