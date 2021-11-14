@@ -1,4 +1,4 @@
-package com.tactbug.ddd.product.query.dto;
+package com.tactbug.ddd.product.query.vo;
 
 import lombok.*;
 import org.hibernate.Hibernate;
@@ -13,7 +13,7 @@ import java.util.Objects;
 @ToString
 @RequiredArgsConstructor
 @Entity
-public class BrandDTO {
+public class BrandVo {
     @Id
     private Long id;
     private String name;
@@ -26,7 +26,7 @@ public class BrandDTO {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
-        BrandDTO brandDTO = (BrandDTO) o;
+        BrandVo brandDTO = (BrandVo) o;
         return id != null && Objects.equals(id, brandDTO.id);
     }
 

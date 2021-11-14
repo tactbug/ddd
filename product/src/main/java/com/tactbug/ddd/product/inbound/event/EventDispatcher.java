@@ -5,7 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.tactbug.ddd.common.utils.SerializeUtil;
 import com.tactbug.ddd.product.TactProductApplication;
 import com.tactbug.ddd.product.assist.exception.TactProductException;
-import com.tactbug.ddd.product.domain.category.event.CategoryEvent;
+import com.tactbug.ddd.product.domain.category.CategoryEvent;
 import com.tactbug.ddd.product.outbound.publisher.EventTopics;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.KafkaHeaders;

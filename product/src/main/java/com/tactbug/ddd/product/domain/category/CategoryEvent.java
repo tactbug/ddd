@@ -1,4 +1,4 @@
-package com.tactbug.ddd.product.domain.category.event;
+package com.tactbug.ddd.product.domain.category;
 
 import com.tactbug.ddd.common.entity.Event;
 import com.tactbug.ddd.product.domain.category.Category;

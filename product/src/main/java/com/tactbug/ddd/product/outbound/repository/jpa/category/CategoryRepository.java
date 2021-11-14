@@ -3,6 +3,7 @@ package com.tactbug.ddd.product.outbound.repository.jpa.category;
 import com.tactbug.ddd.common.entity.Event;
 import com.tactbug.ddd.product.assist.exception.TactProductException;
 import com.tactbug.ddd.product.domain.category.Category;
+import com.tactbug.ddd.product.domain.category.CategoryEvent;
 import com.tactbug.ddd.product.domain.category.CategorySituation;
 import com.tactbug.ddd.product.domain.category.event.*;
 import lombok.extern.slf4j.Slf4j;
@@ -130,7 +131,7 @@ public class CategoryRepository {
     }
 
     private boolean isExistsSameName(String name){
-        return situationRepository.existsByCategoryNameAndDeletedIsTrue(name);
+        return situationRepository.existsByCategoryNameAndDeletedIsFalse(name);
     }
 
     private void syncSituation(CategoryEvent event, String categoryName){
@@ -144,7 +145,7 @@ public class CategoryRepository {
         if (event instanceof CategoryDeleted){
             categorySituation.delete(event);
         }else {
-            categorySituation.update(event);
+            categorySituation.update(event, categoryName);
         }
         situationRepository.save(categorySituation);
     }

@@ -1,9 +1,8 @@
 server:
   port: 11001
+  servlet:
+    context-path: /product
 spring:
-  webflux:
-    base-path: product
   kafka:
-    client-id: product
     consumer:
       group-id: "product"

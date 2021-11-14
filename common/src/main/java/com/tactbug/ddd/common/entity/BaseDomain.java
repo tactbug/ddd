@@ -25,7 +25,7 @@ public class BaseDomain implements Comparable<BaseDomain>{
 
     protected BaseDomain(Long id){
         this.id = id;
-        this.version = 1;
+        this.version = 0;
         this.createTime = ZonedDateTime.now();
         this.updateTime = ZonedDateTime.now();
     }

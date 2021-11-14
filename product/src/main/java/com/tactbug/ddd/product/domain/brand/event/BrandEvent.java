@@ -1,12 +1,9 @@
 package com.tactbug.ddd.product.domain.brand.event;
 
 import com.tactbug.ddd.common.entity.Event;
-import com.tactbug.ddd.common.entity.EventType;
 import com.tactbug.ddd.product.domain.brand.Brand;
-import com.tactbug.ddd.product.domain.category.event.CategoryEvent;
 
 import javax.persistence.*;
-import java.time.ZonedDateTime;
 
 @Entity
 @Table(name = "brand_event",

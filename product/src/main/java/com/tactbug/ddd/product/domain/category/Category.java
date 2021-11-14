@@ -6,10 +6,10 @@ import com.tactbug.ddd.common.utils.IdUtil;
 import com.tactbug.ddd.product.assist.exception.TactProductException;
 import com.tactbug.ddd.product.domain.category.command.*;
 import com.tactbug.ddd.product.domain.category.event.*;
-import com.tactbug.ddd.product.outbound.repository.jpa.category.CategoryRepository;
 import com.tactbug.ddd.product.query.ProductQuery;
-import com.tactbug.ddd.product.query.dto.CategoryDTO;
+import com.tactbug.ddd.product.query.vo.CategoryVo;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
  * @Time 2021/9/28 19:15
  */
 @Data
+@Slf4j
 public class Category extends BaseDomain {
 
     private String name;
@@ -51,14 +52,29 @@ public class Category extends BaseDomain {
     }
 
     public void replay(Collection<CategoryEvent> events) {
-        events.removeIf(Objects::isNull);
-        List<CategoryEvent> sortedEvents = events.stream().sorted().collect(Collectors.toList());
+        List<CategoryEvent> enableEvents = events.stream().filter(Objects::nonNull).collect(Collectors.toList());
+        List<CategoryEvent> sortedEvents = enableEvents.stream().sorted().collect(Collectors.toList());
         Event.checkList(sortedEvents);
         doReplay(sortedEvents);
         check();
     }
 
-    public List<CategoryEvent> updateName(IdUtil idUtil, String name, Long operator) {
+    public List<CategoryEvent> update(IdUtil idUtil, CategoryCommand categoryCommand){
+        List<CategoryEvent> events = new ArrayList<>();
+
+        CategoryUpdateName categoryUpdateName = categoryCommand.updateName();
+        events.addAll(updateName(idUtil, categoryUpdateName.name(), categoryUpdateName.operator()));
+
+        CategoryUpdateRemark categoryUpdateRemark = categoryCommand.updateRemark();
+        events.addAll(updateRemark(idUtil, categoryUpdateRemark.remark(), categoryUpdateRemark.operator()));
+
+        CategoryChangeParent categoryChangeParent = categoryCommand.changeParent();
+        events.addAll(changeParent(idUtil, categoryChangeParent.parentId(), categoryChangeParent.operator()));
+
+        return events;
+    }
+
+    private List<CategoryEvent> updateName(IdUtil idUtil, String name, Long operator) {
         List<CategoryEvent> events = new ArrayList<>();
         if (!this.name.equals(name)){
             this.name = name;
@@ -69,7 +85,7 @@ public class Category extends BaseDomain {
         return events;
     }
 
-    public List<CategoryEvent> updateRemark(IdUtil idUtil, String remark, Long operator){
+    private List<CategoryEvent> updateRemark(IdUtil idUtil, String remark, Long operator){
         List<CategoryEvent> events = new ArrayList<>();
         if (!this.remark.equals(remark)){
             this.remark = remark;
@@ -80,12 +96,12 @@ public class Category extends BaseDomain {
         return events;
     }
 
-    public List<CategoryEvent> changeParent(IdUtil idUtil, Category parent, Long operator) {
+    private List<CategoryEvent> changeParent(IdUtil idUtil, Long parentId, Long operator) {
         List<CategoryEvent> events = new ArrayList<>();
-        if (parent.getId().equals(parentId)){
+        if (parentId.equals(this.parentId)){
             return events;
         }
-        parentId = parent.getId();
+        this.parentId = parentId;
         update();
         check();
         CategoryParentChanged categoryParentChanged = new CategoryParentChanged(idUtil.getId(), this, operator);
@@ -95,14 +111,14 @@ public class Category extends BaseDomain {
 
     public List<CategoryEvent> delete(IdUtil idUtil, DeleteCategory deleteCategory, ProductQuery productQuery){
         List<CategoryEvent> events = new ArrayList<>();
-        CategoryDTO categoryDTO = productQuery.getCategoryById(id);
-        if (Objects.isNull(categoryDTO)){
+        CategoryVo categoryVo = productQuery.getCategoryById(id);
+        if (Objects.isNull(categoryVo)){
             return events;
         }
-        if (!categoryDTO.getChildren().isEmpty()){
+        if (!categoryVo.getChildren().isEmpty()){
             throw TactProductException.resourceOperateError("当前分类还有子分类, 不能删除");
         }
-        if (!categoryDTO.getBrandList().isEmpty()){
+        if (!categoryVo.getBrandList().isEmpty()){
             throw TactProductException.resourceOperateError("当前分类下还有绑定品牌, 不能删除");
         }
         update();
@@ -114,7 +130,7 @@ public class Category extends BaseDomain {
         for (int i = 0; i < events.size(); i++) {
             Event<Category> current = events.get(i);
             if (current instanceof CategoryDeleted){
-                i = events.size();
+                i = events.size() - 1;
             }
             switch (events.get(i)){
                 case CategoryCreated c -> c.replay(this);

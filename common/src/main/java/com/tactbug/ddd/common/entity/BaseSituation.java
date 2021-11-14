@@ -21,12 +21,12 @@ public class BaseSituation {
         deleted = false;
     }
 
-    public void update(Event<? extends BaseDomain> event){
+    protected void update(Event<? extends BaseDomain> event){
         lastEventId = event.getId();
         lastVersion = event.getDomainVersion();
     }
 
-    public void delete(Event<? extends BaseDomain> event){
+    protected void delete(Event<? extends BaseDomain> event){
         lastEventId = event.getId();
         lastVersion = event.getDomainVersion();
         deleted = true;

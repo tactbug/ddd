@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.tactbug.ddd.common.utils.SerializeUtil;
 import com.tactbug.ddd.product.assist.exception.TactProductException;
 import com.tactbug.ddd.product.domain.category.Category;
+import com.tactbug.ddd.product.domain.category.CategoryEvent;
 
 import javax.persistence.Entity;
 import java.util.HashMap;

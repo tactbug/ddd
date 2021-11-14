@@ -6,7 +6,7 @@ import com.tactbug.ddd.common.entity.Event;
 import com.tactbug.ddd.common.utils.SerializeUtil;
 import com.tactbug.ddd.product.TactProductApplication;
 import com.tactbug.ddd.product.assist.exception.TactProductException;
-import com.tactbug.ddd.product.domain.category.event.CategoryEvent;
+import com.tactbug.ddd.product.domain.category.CategoryEvent;
 import com.tactbug.ddd.product.outbound.repository.jpa.category.CategoryEventRepository;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;

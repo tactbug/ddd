@@ -2,12 +2,11 @@ package com.tactbug.ddd.product.service.category;
 
 import com.tactbug.ddd.common.utils.IdUtil;
 import com.tactbug.ddd.product.TactProductApplication;
-import com.tactbug.ddd.product.assist.exception.TactProductException;
 import com.tactbug.ddd.product.domain.category.Category;
 import com.tactbug.ddd.product.domain.category.command.CategoryCommand;
 import com.tactbug.ddd.product.domain.category.command.CreateCategory;
 import com.tactbug.ddd.product.domain.category.command.DeleteCategory;
-import com.tactbug.ddd.product.domain.category.event.CategoryEvent;
+import com.tactbug.ddd.product.domain.category.CategoryEvent;
 import com.tactbug.ddd.product.outbound.publisher.EventPublisher;
 import com.tactbug.ddd.product.outbound.publisher.EventTopics;
 import com.tactbug.ddd.product.outbound.repository.jpa.category.CategoryRepository;
@@ -18,8 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 
 /**
  * @Author tactbug
@@ -47,6 +44,14 @@ public class CategoryService {
         if (!category.getParentId().equals(Category.ROOT_CATEGORY_ID)){
             categoryRepository.getOne(category.getParentId());
         }
+        categoryRepository.execute(events);
+        eventPublisher.publish(events, EventTopics.CATEGORY);
+        return category;
+    }
+
+    public Category updateCategory(CategoryCommand categoryCommand){
+        Category category = categoryRepository.getOne(categoryCommand.getId());
+        List<CategoryEvent> events = category.update(ID_UTIL, categoryCommand);
         categoryRepository.execute(events);
         eventPublisher.publish(events, EventTopics.CATEGORY);
         return category;

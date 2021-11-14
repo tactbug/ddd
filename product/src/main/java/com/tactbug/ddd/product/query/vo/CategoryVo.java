@@ -1,7 +1,9 @@
-package com.tactbug.ddd.product.query.dto;
+package com.tactbug.ddd.product.query.vo;
 
-import com.tactbug.ddd.product.domain.category.Category;
-import lombok.*;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.Hibernate;
 
 import javax.persistence.Entity;
@@ -17,7 +19,7 @@ import java.util.Objects;
 @ToString
 @RequiredArgsConstructor
 @Entity
-public class CategoryDTO {
+public class CategoryVo {
     @Id
     private Long id;
     private Integer version;
@@ -25,12 +27,12 @@ public class CategoryDTO {
     private String remark;
     @OneToMany
     @ToString.Exclude
-    private List<CategoryDTO> children;
+    private List<CategoryVo> children;
     @ManyToOne
-    private CategoryDTO parent;
+    private CategoryVo parent;
     @OneToMany
     @ToString.Exclude
-    private List<BrandDTO> brandList;
+    private List<BrandVo> brandList;
     private boolean deleted;
     private ZonedDateTime createTime;
     private ZonedDateTime updateTime;
@@ -39,7 +41,7 @@ public class CategoryDTO {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
-        CategoryDTO that = (CategoryDTO) o;
+        CategoryVo that = (CategoryVo) o;
         return id != null && Objects.equals(id, that.id);
     }
 
