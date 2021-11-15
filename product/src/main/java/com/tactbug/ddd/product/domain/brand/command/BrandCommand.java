@@ -30,7 +30,7 @@ public class BrandCommand extends BaseCommand {
     }
 
     public DeleteBrand deleteBrand(){
-        checkId();
+        checkBase();
         return new DeleteBrand(id, operator);
     }
 
@@ -42,14 +42,14 @@ public class BrandCommand extends BaseCommand {
     }
 
     private void checkUpdateName(){
-        checkId();
+        checkBase();
         if (Objects.isNull(name) || name.isBlank()){
             throw new IllegalArgumentException("品牌名称不能为空");
         }
     }
 
     private void checkUpdateRemark(){
-        checkId();
+        checkBase();
         checkRemark();
     }
 

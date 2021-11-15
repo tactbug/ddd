@@ -4,7 +4,6 @@ import com.tactbug.ddd.common.entity.BaseCommand;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import java.util.Collection;
 import java.util.Objects;
 
 /**
@@ -53,28 +52,28 @@ public class CategoryCommand extends BaseCommand {
     }
 
     private void checkUpdateName(){
-        checkId();
+        super.checkForUpdate();
         if (Objects.isNull(name) || name.isBlank()){
             throw new IllegalArgumentException("分类名称不能为空");
         }
     }
 
     private void checkUpdateRemark(){
-        checkId();
+        super.checkForUpdate();
         if (Objects.isNull(remark)){
             remark = "";
         }
     }
 
     private void checkChangeParent(){
-        checkId();
+        super.checkForUpdate();
         if (Objects.isNull(parentId)){
             throw new IllegalArgumentException("必须指定父分类");
         }
     }
 
     private void checkDeleteCategory(){
-        checkId();
+        super.checkForUpdate();
     }
 
 }

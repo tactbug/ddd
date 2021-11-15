@@ -10,6 +10,7 @@ public class CategoryResponse {
     private String name;
     private String remark;
     private Long parentId;
+    private Integer version;
 
     public static CategoryResponse generate(Category category){
         CategoryResponse categoryResponse = new CategoryResponse();

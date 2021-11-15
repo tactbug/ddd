@@ -53,9 +53,6 @@ public class CategoryRepository {
     private void create(CategoryCreated categoryCreated){
         Category snapshot = new Category();
         snapshot.replay(Collections.singleton(categoryCreated));
-        if (isExistsSameName(snapshot.getName())){
-            throw TactProductException.resourceOperateError("分类[" + snapshot.getName() + "]已经存在");
-        }
         eventRepository.save(categoryCreated);
         snapshotRepository.save(snapshot);
         syncSituation(categoryCreated, snapshot.getName());
@@ -65,9 +62,6 @@ public class CategoryRepository {
         checkExists(categoryNameUpdated.getDomainId());
         Category category = getOne(categoryNameUpdated.getDomainId());
         category.replay(Collections.singleton(categoryNameUpdated));
-        if (isExistsSameName(category.getName())){
-            throw TactProductException.resourceOperateError("分类[" + category.getName() + "]已经存在");
-        }
         eventRepository.save(categoryNameUpdated);
         syncSituation(categoryNameUpdated, category.getName());
     }
@@ -125,12 +119,12 @@ public class CategoryRepository {
         return optional.isPresent() && optional.get().isDeleted();
     }
 
-    private boolean isExists(Long id){
+    public boolean isExists(Long id){
         Optional<CategorySituation> optional = situationRepository.findById(id);
         return optional.isPresent() && !optional.get().isDeleted();
     }
 
-    private boolean isExistsSameName(String name){
+    public boolean isExistsSameName(String name){
         return situationRepository.existsByCategoryNameAndDeletedIsFalse(name);
     }
 

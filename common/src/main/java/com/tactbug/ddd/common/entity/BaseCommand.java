@@ -9,8 +9,16 @@ import java.util.Objects;
  */
 public class BaseCommand {
     protected Long id;
+    protected Integer version;
 
-    protected void checkId(){
+    protected void checkForUpdate(){
+        checkId();
+        if (Objects.isNull(version)){
+            throw new IllegalArgumentException("版本不能为空");
+        }
+    }
+
+    private void checkId(){
         if (Objects.isNull(id)){
             throw new IllegalArgumentException("id不能为空");
         }
@@ -23,4 +31,5 @@ public class BaseCommand {
     public void setId(Long id) {
         this.id = id;
     }
+
 }
