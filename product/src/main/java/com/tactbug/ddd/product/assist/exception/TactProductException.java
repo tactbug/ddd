@@ -11,30 +11,30 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 public class TactProductException extends RuntimeException{
 
-    private final Exception exception;
+    private final Throwable exception;
 
-    public TactProductException(String pre, String info, Exception e){
+    public TactProductException(String pre, String info, Throwable e){
         super(pre + "|-" + info);
         this.exception = e;
     }
 
-    public static TactProductException jsonOperateError(String message, Exception e){
+    public static TactProductException jsonOperateError(String message, Throwable e){
         return new TactProductException("对象序列化异常", message, e);
     }
 
-    public static TactProductException resourceOperateError(String message, Exception e){
+    public static TactProductException resourceOperateError(String message, Throwable e){
         return new TactProductException("资源操作异常", message, e);
     }
 
-    public static TactProductException replayError(String message, Exception e){
+    public static TactProductException replayError(String message, Throwable e){
         return new TactProductException("对象重放异常", message, e);
     }
 
-    public static TactProductException eventOperateError(String message, Exception e){
+    public static TactProductException eventOperateError(String message, Throwable e){
         return new TactProductException("事件操作异常", message, e);
     }
 
-    public static TactProductException unKnowEnumError(String message, Exception e){
+    public static TactProductException unKnowEnumError(String message, Throwable e){
         return new TactProductException("不支持的枚举类型", message, e);
     }
 }

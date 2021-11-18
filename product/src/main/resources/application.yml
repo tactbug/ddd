@@ -2,3 +2,7 @@ server:
   port: 11001
   servlet:
     context-path: /product
+spring:
+  kafka:
+    listener:
+      ack-mode: manual

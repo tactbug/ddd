@@ -10,8 +10,11 @@ import com.tactbug.ddd.product.domain.brand.event.BrandEvent;
 import com.tactbug.ddd.product.domain.category.CategoryEvent;
 import com.tactbug.ddd.product.outbound.repository.jpa.brand.BrandEventRepository;
 import com.tactbug.ddd.product.outbound.repository.jpa.category.CategoryEventRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Component;
+import org.springframework.util.concurrent.ListenableFuture;
 
 import javax.annotation.Resource;
 import java.util.Collection;
@@ -20,6 +23,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
+@Slf4j
 public class EventPublisher {
 
     @Resource
@@ -32,28 +36,20 @@ public class EventPublisher {
     public void publish(Collection<? extends Event<? extends BaseDomain>> events, EventTopics topic){
         Map<Long, List<Event<? extends BaseDomain>>> eventMap = events.stream().collect(Collectors.groupingBy(Event::getDomainId));
         eventMap.forEach((domainId, eventGroup) -> {
-
             String json;
             try {
                 json = SerializeUtil.objectToJson(eventGroup);
             } catch (JsonProcessingException e) {
                 throw TactProductException.jsonOperateError(eventGroup.toString(), e);
             }
-
-            int retryTimes = 3;
-            while (true){
-                try {
-                    System.out.println("第" + (4 - retryTimes) + "次推送");
-                    doPublish(events);
-                    kafkaTemplate.send(TactProductApplication.APPLICATION_NAME + "-" + topic.getName(), "" + domainId, json);
-                    break;
-                }catch (Exception e){
-                    retryTimes --;
-                    if (retryTimes < 1){
-                        throw TactProductException.eventOperateError("事件发布" + eventGroup.toString() + "失败", e);
+            ListenableFuture<SendResult<String, String>> send = kafkaTemplate.send(TactProductApplication.APPLICATION_NAME + "-" + topic.getName(), "" + domainId, json);
+            send.addCallback(result -> doPublish(events),
+                    ex ->
+                    {
+                        log.error("事件发布" + eventGroup.toString() + "失败", ex);
+                        throw TactProductException.eventOperateError("事件发布" + eventGroup.toString() + "失败", ex);
                     }
-                }
-            }
+            );
         });
     }
 
