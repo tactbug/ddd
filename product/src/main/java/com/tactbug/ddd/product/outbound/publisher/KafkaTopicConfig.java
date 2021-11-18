@@ -1,7 +1,6 @@
 package com.tactbug.ddd.product.outbound.publisher;
 
 import com.tactbug.ddd.product.TactProductApplication;
-import org.apache.kafka.common.config.TopicConfig;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.TopicBuilder;
