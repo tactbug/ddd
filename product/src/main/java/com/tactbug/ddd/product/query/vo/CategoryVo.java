@@ -1,5 +1,8 @@
 package com.tactbug.ddd.product.query.vo;
 
+import com.tactbug.ddd.common.entity.BaseDomain;
+import com.tactbug.ddd.common.entity.Event;
+import com.tactbug.ddd.product.domain.category.event.CategoryCreated;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -11,6 +14,7 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import java.time.ZonedDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
@@ -19,10 +23,8 @@ import java.util.Objects;
 @ToString
 @RequiredArgsConstructor
 @Entity
-public class CategoryVo {
-    @Id
-    private Long id;
-    private Integer version;
+public class CategoryVo extends BaseDomain{
+
     private String name;
     private String remark;
     @OneToMany
@@ -34,19 +36,26 @@ public class CategoryVo {
     @ToString.Exclude
     private List<BrandVo> brandList;
     private boolean deleted;
-    private ZonedDateTime createTime;
-    private ZonedDateTime updateTime;
+
+    public void accept(Collection<? extends Event<? extends BaseDomain>> events){
+
+    }
+
+    private void acceptCategoryCreated(CategoryCreated categoryCreated){
+        CategoryVo categoryVo = new CategoryVo();
+        categoryVo.setId(categoryCreated.getDomainId());
+    }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
         CategoryVo that = (CategoryVo) o;
-        return id != null && Objects.equals(id, that.id);
+        return Objects.equals(id, that.id);
     }
 
     @Override
     public int hashCode() {
-        return 0;
+        return Objects.hash(id);
     }
 }

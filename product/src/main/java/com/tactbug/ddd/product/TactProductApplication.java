@@ -13,7 +13,7 @@ import org.springframework.kafka.annotation.EnableKafka;
 @EnableKafka
 public class TactProductApplication {
 
-    public static final String APPLICATION_NAME = "tact-product";
+    public static final String APPLICATION_NAME = "product";
 
     public static void main(String[] args) {
         SpringApplication.run(TactProductApplication.class, args);

@@ -6,6 +6,7 @@ import com.tactbug.ddd.common.utils.SerializeUtil;
 import com.tactbug.ddd.product.assist.exception.TactProductException;
 import com.tactbug.ddd.product.domain.category.Category;
 import com.tactbug.ddd.product.domain.category.CategoryEvent;
+import com.tactbug.ddd.product.query.vo.CategoryVo;
 
 import javax.persistence.Entity;
 import java.util.HashMap;
@@ -40,8 +41,12 @@ public class CategoryCreated extends CategoryEvent {
             category.setParentId(Long.valueOf(dataMap.get("parentId").toString()));
             category.setDeleted(false);
         } catch (Exception e) {
-            throw TactProductException.replayError("[" + category.getId() + "]新增数据异常");
+            throw TactProductException.replayError("[" + category.getId() + "]新增数据异常", e);
         }
+    }
+
+    public void doAccept(CategoryVo categoryVo){
+        super.doAccept(categoryVo);
     }
 
     private void assembleData(Category category) {
@@ -53,7 +58,7 @@ public class CategoryCreated extends CategoryEvent {
         try {
             data = SerializeUtil.mapToString(map);
         } catch (JsonProcessingException e) {
-            throw TactProductException.jsonException(e);
+            throw TactProductException.jsonOperateError(map.toString(), e);
         }
     }
 
@@ -64,7 +69,7 @@ public class CategoryCreated extends CategoryEvent {
             data = SerializeUtil.jsonToObject(this.data, new TypeReference<>() {
             });
         } catch (JsonProcessingException e) {
-            throw TactProductException.jsonException(e);
+            throw TactProductException.jsonOperateError(this.data, e);
         }
         if (Objects.isNull(data.get("id")) || !SerializeUtil.isNumber(data.get("id").toString())){
             throw new IllegalStateException("商品分类溯源事件[" + getId() + "]聚合ID状态异常");

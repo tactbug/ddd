@@ -33,7 +33,7 @@ public class BrandService {
 
     public Brand update(BrandCommand brandCommand){
         Brand brand = brandRepository.getOneById(brandCommand.getId())
-                .orElseThrow(() -> TactProductException.resourceOperateError("品牌[" + brandCommand.getId() + "]不存在"));
+                .orElseThrow(() -> TactProductException.resourceOperateError("品牌[" + brandCommand.getId() + "]不存在", null));
         List<BrandEvent> events = brand.update(BRAND_ID_UTIL, brandCommand);
         if (!events.isEmpty()){
             brandRepository.update(brand, events);

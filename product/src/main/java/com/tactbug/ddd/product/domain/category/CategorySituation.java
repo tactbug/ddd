@@ -39,7 +39,4 @@ public class CategorySituation extends BaseSituation {
         this.categoryName = categoryName;
     }
 
-    public void delete(CategoryEvent categoryEvent){
-        super.delete(categoryEvent);
-    }
 }

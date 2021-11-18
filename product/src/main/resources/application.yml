@@ -2,7 +2,3 @@ server:
   port: 11001
   servlet:
     context-path: /product
-spring:
-  kafka:
-    consumer:
-      group-id: "product"

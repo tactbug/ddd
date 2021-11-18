@@ -42,7 +42,7 @@ public class CategoryService {
 
     public Category createCategory(CreateCategory createCategory){
         if (categoryRepository.isExistsSameName(createCategory.name())){
-            throw TactProductException.resourceOperateError("已经存在同名[" + createCategory.name() + "]的分类");
+            throw TactProductException.resourceOperateError("已经存在同名[" + createCategory.name() + "]的分类", null);
         }
         List<CategoryEvent> events = new ArrayList<>();
         Category category = Category.generate(ID_UTIL, createCategory, events);
@@ -55,12 +55,12 @@ public class CategoryService {
     }
 
     public Category updateCategory(CategoryCommand categoryCommand){
-        if (categoryRepository.isExists(categoryCommand.getId())){
-            throw TactProductException.resourceOperateError("分类[" + categoryCommand.getId() + "]不存在或已删除");
+        if (!categoryRepository.isExists(categoryCommand.getId())){
+            throw TactProductException.resourceOperateError("分类[" + categoryCommand.getId() + "]不存在或已删除", null);
         }
         Category category = categoryRepository.getOne(categoryCommand.getId());
         if (!category.getName().equals(categoryCommand.getName()) && categoryRepository.isExistsSameName(categoryCommand.getName())){
-            throw TactProductException.resourceOperateError("分类[" + categoryCommand.getName() + "]已经存在");
+            throw TactProductException.resourceOperateError("分类[" + categoryCommand.getName() + "]已经存在", null);
         }
         List<CategoryEvent> events = category.update(ID_UTIL, categoryCommand);
         categoryRepository.execute(events);

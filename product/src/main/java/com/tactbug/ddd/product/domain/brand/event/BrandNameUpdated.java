@@ -35,7 +35,7 @@ public class BrandNameUpdated extends BrandEvent{
         try {
             this.data = SerializeUtil.mapToString(map);
         } catch (JsonProcessingException e) {
-            throw TactProductException.jsonException(e);
+            throw TactProductException.jsonOperateError(this.data, e);
         }
     }
 
@@ -46,7 +46,7 @@ public class BrandNameUpdated extends BrandEvent{
             data = SerializeUtil.jsonToObject(this.data, new TypeReference<>() {
             });
         } catch (JsonProcessingException e) {
-            throw TactProductException.jsonException(e);
+            throw TactProductException.jsonOperateError(this.data, e);
         }
         if (Objects.isNull(data.get("id")) || !SerializeUtil.isNumber(data.get("id").toString())){
             throw new IllegalStateException("品牌溯源事件[" + getId() + "]聚合ID状态异常");

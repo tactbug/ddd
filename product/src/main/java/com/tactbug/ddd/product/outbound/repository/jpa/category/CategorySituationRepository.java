@@ -8,5 +8,5 @@ import java.util.Optional;
 
 @Repository
 public interface CategorySituationRepository extends JpaRepository<CategorySituation, Long> {
-    Boolean existsByCategoryNameAndDeletedIsFalse(String categoryName);
+    Boolean existsByCategoryName(String categoryName);
 }

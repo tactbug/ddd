@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.sql.SQLException;
+import java.util.Objects;
 
 /**
  * @Author tactbug
@@ -23,8 +24,11 @@ public class ExceptionAdvice {
 
     @ExceptionHandler(TactProductException.class)
     public Result<String> tactException(TactProductException t){
-        log.error("商品服务异常:", t);
-        return Result.fail(PRODUCT_EXCEPTION_CODE, t.getMessage(), t.getMessage());
+        if (Objects.isNull(t.getException())){
+            return Result.fail(PRODUCT_EXCEPTION_CODE, t.getMessage(), t.getMessage());
+        }else {
+            return Result.fail(PRODUCT_EXCEPTION_CODE, t.getMessage(), t.getException().getMessage());
+        }
     }
 
     @ExceptionHandler(IllegalStateException.class)

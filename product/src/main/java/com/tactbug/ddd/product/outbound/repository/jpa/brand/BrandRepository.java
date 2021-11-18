@@ -28,10 +28,10 @@ public class BrandRepository {
 
     public Optional<Brand> getOneById(Long id){
         if (isDelete(id)){
-            throw TactProductException.resourceOperateError("品牌[" + id + "]已被删除");
+            throw TactProductException.resourceOperateError("品牌[" + id + "]已被删除", null);
         }
         if (!isExists(id, null)){
-            throw TactProductException.resourceOperateError("品牌[" + id + "]不存在");
+            throw TactProductException.resourceOperateError("品牌[" + id + "]不存在", null);
         }
         Brand snapshot = getSnapshot(id).orElse(new Brand());
         List<BrandEvent> events = eventRepository.findAllByDomainIdAndDomainVersionGreaterThanOrderByDomainVersionAsc(id, snapshot.getVersion());
@@ -42,7 +42,7 @@ public class BrandRepository {
 
     public void create(Brand brand, Long operator){
         if (isExists(brand.getId(), brand)){
-            throw TactProductException.resourceOperateError("品牌[" + brand + "]已经存在");
+            throw TactProductException.resourceOperateError("品牌[" + brand + "]已经存在", null);
         }
         brand.check();
         BrandCreated event = brand.createBrand(BRAND_EVENT_ID_UTIL.getId(), operator);
@@ -53,10 +53,10 @@ public class BrandRepository {
 
     public void update(Brand brand, List<BrandEvent> events){
         if (isDelete(brand.getId())){
-            throw TactProductException.resourceOperateError("品牌[" + brand + "]已被删除");
+            throw TactProductException.resourceOperateError("品牌[" + brand + "]已被删除", null);
         }
         if (!isExists(brand.getId(), brand)){
-            throw TactProductException.resourceOperateError("品牌[" + brand + "]不存在");
+            throw TactProductException.resourceOperateError("品牌[" + brand + "]不存在", null);
         }
         checkEvents(brand);
         events = events.stream().sorted().collect(Collectors.toList());
@@ -68,7 +68,7 @@ public class BrandRepository {
             return;
         }
         if (!isExists(brand.getId(), brand)){
-            throw TactProductException.resourceOperateError("品牌[" + brand + "]不存在");
+            throw TactProductException.resourceOperateError("品牌[" + brand + "]不存在", null);
         }
         brand.check();
         checkEvents(brand);
@@ -100,7 +100,7 @@ public class BrandRepository {
     private void checkEvents(Brand brand){
         List<BrandEvent> exists = eventRepository.findAllByDomainIdAndDomainVersionGreaterThanOrderByDomainVersionAsc(brand.getId(), brand.getVersion());
         if (!exists.isEmpty()){
-            throw TactProductException.resourceOperateError("品牌[" + brand + "]状态异常");
+            throw TactProductException.resourceOperateError("品牌[" + brand + "]状态异常", null);
         }
     }
 }

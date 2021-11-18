@@ -37,7 +37,7 @@ public class CategoryNameUpdated extends CategoryEvent {
             category.setName(dataMap.get("name").toString());
             category.setDeleted(false);
         } catch (Exception e) {
-            throw TactProductException.replayError("[" + category.getId() + "]名称数据异常");
+            throw TactProductException.replayError("[" + category.getId() + "]名称数据异常", null);
         }
     }
 
@@ -48,7 +48,7 @@ public class CategoryNameUpdated extends CategoryEvent {
         try {
             data = SerializeUtil.mapToString(map);
         } catch (JsonProcessingException e) {
-            throw TactProductException.jsonException(e);
+            throw TactProductException.jsonOperateError(map.toString(), e);
         }
     }
 
@@ -59,7 +59,7 @@ public class CategoryNameUpdated extends CategoryEvent {
             data = SerializeUtil.jsonToObject(this.data, new TypeReference<>() {
             });
         } catch (JsonProcessingException e) {
-            throw TactProductException.jsonException(e);
+            throw TactProductException.jsonOperateError(this.data, e);
         }
         if (Objects.isNull(data.get("id")) || !SerializeUtil.isNumber(data.get("id").toString())){
             throw new IllegalStateException("商品分类溯源事件[" + getId() + "]聚合ID状态异常");

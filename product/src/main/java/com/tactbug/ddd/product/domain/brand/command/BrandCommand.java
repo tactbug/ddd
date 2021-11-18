@@ -1,6 +1,7 @@
 package com.tactbug.ddd.product.domain.brand.command;
 
 import com.tactbug.ddd.common.entity.BaseCommand;
+import com.tactbug.ddd.product.assist.exception.TactProductException;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -30,30 +31,31 @@ public class BrandCommand extends BaseCommand {
     }
 
     public DeleteBrand deleteBrand(){
-        checkBase();
+        checkDelete();
         return new DeleteBrand(id, operator);
     }
 
     private void checkCreateBrand(){
-        checkRemark();
         if (Objects.isNull(name) || name.isBlank()){
             throw new IllegalArgumentException("品牌名称不能为空");
         }
+        remark = Objects.isNull(remark) ? "" : remark;
     }
 
     private void checkUpdateName(){
-        checkBase();
+        super.checkForUpdate();
         if (Objects.isNull(name) || name.isBlank()){
             throw new IllegalArgumentException("品牌名称不能为空");
         }
     }
 
     private void checkUpdateRemark(){
-        checkBase();
-        checkRemark();
-    }
-
-    private void checkRemark(){
+        super.checkForUpdate();
         remark = Objects.isNull(remark) ? "" : remark;
     }
+
+    private void checkDelete(){
+        super.checkForUpdate();
+    }
+
 }

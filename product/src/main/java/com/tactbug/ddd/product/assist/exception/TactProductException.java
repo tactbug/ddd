@@ -1,34 +1,40 @@
 package com.tactbug.ddd.product.assist.exception;
 
-import com.fasterxml.jackson.core.JacksonException;
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @Author tactbug
  * @Email tactbug@Gmail.com
  * @Time 2021/10/6 22:59
  */
+@Getter
 public class TactProductException extends RuntimeException{
-    public TactProductException(String pre, String info){
+
+    private final Exception exception;
+
+    public TactProductException(String pre, String info, Exception e){
         super(pre + "|-" + info);
+        this.exception = e;
     }
 
-    public static TactProductException jsonException(JacksonException jacksonException){
-        return new TactProductException("json解析异常", jacksonException.getMessage());
+    public static TactProductException jsonOperateError(String message, Exception e){
+        return new TactProductException("对象序列化异常", message, e);
     }
 
-    public static TactProductException resourceOperateError(String message){
-        return new TactProductException("资源操作异常", message);
+    public static TactProductException resourceOperateError(String message, Exception e){
+        return new TactProductException("资源操作异常", message, e);
     }
 
-    public static TactProductException replayError(String message){
-        return new TactProductException("对象重放异常", message);
+    public static TactProductException replayError(String message, Exception e){
+        return new TactProductException("对象重放异常", message, e);
     }
 
-    public static TactProductException eventOperateError(String message){
-        return new TactProductException("事件操作异常", message);
+    public static TactProductException eventOperateError(String message, Exception e){
+        return new TactProductException("事件操作异常", message, e);
     }
 
-    public static TactProductException unknowEnumError(String message){
-        return new TactProductException("不支持的枚举类型", message);
+    public static TactProductException unKnowEnumError(String message, Exception e){
+        return new TactProductException("不支持的枚举类型", message, e);
     }
 }

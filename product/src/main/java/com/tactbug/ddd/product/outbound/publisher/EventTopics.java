@@ -7,16 +7,19 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum EventTopics {
-    CATEGORY,
+    CATEGORY("category"),
+    BRAND("brand")
     ;
+
+    private final String name;
 
     public static EventTopics get(String topic){
         for (EventTopics e :
                 EventTopics.values()) {
-            if (e.name().equals(topic)){
+            if (e.getName().equals(topic)){
                 return e;
             }
         }
-        throw TactProductException.unknowEnumError(topic);
+        throw TactProductException.unKnowEnumError(topic, null);
     }
 }

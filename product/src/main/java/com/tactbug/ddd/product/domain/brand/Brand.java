@@ -21,8 +21,6 @@ public class Brand extends BaseDomain {
     private String name;
     private String remark;
 
-    private List<Long> categoryIds;
-
     public Brand(){
         super();
     }
@@ -115,7 +113,7 @@ public class Brand extends BaseDomain {
         try {
             data = SerializeUtil.jsonToObject(json, new TypeReference<>() {});
         } catch (JsonProcessingException e) {
-            throw new TactProductException("json解析异常", e.getMessage());
+            throw TactProductException.jsonOperateError(json, e);
         }
         replayAttr(data);
     }

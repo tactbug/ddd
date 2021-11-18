@@ -49,6 +49,7 @@ public class CategoryCommand extends BaseCommand {
         if (Objects.isNull(name) || name.isBlank()){
             throw new IllegalArgumentException("分类名称不能为空");
         }
+        parentId = Objects.isNull(parentId) ? 0 : parentId;
     }
 
     private void checkUpdateName(){

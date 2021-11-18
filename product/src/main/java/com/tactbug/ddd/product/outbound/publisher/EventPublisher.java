@@ -6,7 +6,9 @@ import com.tactbug.ddd.common.entity.Event;
 import com.tactbug.ddd.common.utils.SerializeUtil;
 import com.tactbug.ddd.product.TactProductApplication;
 import com.tactbug.ddd.product.assist.exception.TactProductException;
+import com.tactbug.ddd.product.domain.brand.event.BrandEvent;
 import com.tactbug.ddd.product.domain.category.CategoryEvent;
+import com.tactbug.ddd.product.outbound.repository.jpa.brand.BrandEventRepository;
 import com.tactbug.ddd.product.outbound.repository.jpa.category.CategoryEventRepository;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
@@ -15,7 +17,6 @@ import javax.annotation.Resource;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -25,6 +26,8 @@ public class EventPublisher {
     private KafkaTemplate<String, String> kafkaTemplate;
     @Resource
     private CategoryEventRepository categoryEventRepository;
+    @Resource
+    private BrandEventRepository brandEventRepository;
 
     public void publish(Collection<? extends Event<? extends BaseDomain>> events, EventTopics topic){
         Map<Long, List<Event<? extends BaseDomain>>> eventMap = events.stream().collect(Collectors.groupingBy(Event::getDomainId));
@@ -34,30 +37,67 @@ public class EventPublisher {
             try {
                 json = SerializeUtil.objectToJson(eventGroup);
             } catch (JsonProcessingException e) {
-                throw TactProductException.jsonException(e);
+                throw TactProductException.jsonOperateError(eventGroup.toString(), e);
             }
 
             int retryTimes = 3;
-            Set<Long> ids = eventGroup.stream().map(Event::getId).collect(Collectors.toSet());
             while (true){
                 try {
-                    List<CategoryEvent> currentEvents = categoryEventRepository.findAllById(ids);
-                    if (currentEvents.size() != ids.size()){
-                        throw TactProductException.eventOperateError("待同步事件数量异常, 待同步[" + ids.size() + "]件, 现有[" + currentEvents.size() + "]件");
-                    }
-                    currentEvents.forEach(Event::publish);
-                    categoryEventRepository.saveAll(currentEvents);
+                    System.out.println("第" + (4 - retryTimes) + "次推送");
+                    doPublish(events);
+                    kafkaTemplate.send(TactProductApplication.APPLICATION_NAME + "-" + topic.getName(), "" + domainId, json);
                     break;
                 }catch (Exception e){
                     retryTimes --;
                     if (retryTimes < 1){
-                        throw TactProductException.eventOperateError("同步事件" + eventGroup + "状态失败");
+                        throw TactProductException.eventOperateError("事件发布" + eventGroup.toString() + "失败", e);
                     }
                 }
             }
-
-            kafkaTemplate.send(TactProductApplication.APPLICATION_NAME + EventTopics.CATEGORY.name(), "" + domainId, json);
         });
-
     }
+
+    private void doPublish(Collection<? extends Event<? extends BaseDomain>> events){
+        Map<Long, List<BrandEvent>> brandEventMap = events.stream()
+                .filter(e -> e instanceof BrandEvent)
+                .map(e -> (BrandEvent) e)
+                .collect(Collectors.groupingBy(BrandEvent::getDomainId));
+        Map<Long, List<CategoryEvent>> categoryEventMap = events.stream()
+                .filter(e -> e instanceof CategoryEvent)
+                .map(e -> (CategoryEvent) e)
+                .collect(Collectors.groupingBy(CategoryEvent::getDomainId));
+        brandEventPublish(brandEventMap);
+        categoryEventPublish(categoryEventMap);
+    }
+
+    private void categoryEventPublish(Map<Long, List<CategoryEvent>> categoryEventMap){
+        if (categoryEventMap.isEmpty()){
+            return;
+        }
+        categoryEventMap.forEach((domainId, eventGroup) -> {
+            List<Long> ids = eventGroup.stream().map(CategoryEvent::getId).collect(Collectors.toList());
+            List<CategoryEvent> currentEvents = categoryEventRepository.findAllById(ids);
+            if (currentEvents.size() != ids.size()){
+                throw TactProductException.eventOperateError("商品分类待发布事件数量异常, 待发布[" + ids.size() + "]件, 现有[" + currentEvents.size() + "]件", null);
+            }
+            currentEvents.forEach(Event::publish);
+            categoryEventRepository.saveAll(currentEvents);
+        });
+    }
+
+    private void brandEventPublish(Map<Long, List<BrandEvent>> brandEventMap){
+        if (brandEventMap.isEmpty()){
+            return;
+        }
+        brandEventMap.forEach((domainId, eventGroup) -> {
+            List<Long> ids = eventGroup.stream().map(BrandEvent::getId).collect(Collectors.toList());
+            List<BrandEvent> currentEvents = brandEventRepository.findAllById(ids);
+            if (currentEvents.size() != ids.size()){
+                throw TactProductException.eventOperateError("品牌待发布事件数量异常, 待发布[" + ids.size() + "]件, 现有[" + currentEvents.size() + "]件", null);
+            }
+            currentEvents.forEach(Event::publish);
+            brandEventRepository.saveAll(currentEvents);
+        });
+    }
+
 }

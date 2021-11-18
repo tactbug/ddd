@@ -55,6 +55,10 @@ public class Event<T extends BaseDomain> extends BaseDomain {
         baseDomain.setUpdateTime(createTime);
     }
 
+    public void doAccept(BaseDomain baseDomain){
+        replay(baseDomain);
+    }
+
     public void publish(){
         if (!published){
             published = true;

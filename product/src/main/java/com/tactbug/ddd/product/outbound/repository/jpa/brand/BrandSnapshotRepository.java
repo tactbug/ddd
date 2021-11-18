@@ -28,7 +28,7 @@ public class BrandSnapshotRepository {
                 });
                 return Objects.nonNull(brand) ? Optional.of(brand) : Optional.empty();
             }catch (JacksonException j){
-                throw TactProductException.jsonException(j);
+                throw TactProductException.jsonOperateError(hashValue.toString(), j);
             }
         }
         return Optional.empty();
@@ -39,7 +39,7 @@ public class BrandSnapshotRepository {
             String value = SerializeUtil.objectToJson(brand);
             redisTemplate.opsForHash().put(Category.class, brand.getId(), value);
         } catch (JsonProcessingException e) {
-            throw TactProductException.jsonException(e);
+            throw TactProductException.jsonOperateError(brand.toString(), e);
         }
     }
 }

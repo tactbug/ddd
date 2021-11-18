@@ -32,7 +32,7 @@ public class CategorySnapshotRepository {
                 });
                 return Objects.nonNull(category) ? Optional.of(category) : Optional.empty();
             }catch (JacksonException j){
-                throw TactProductException.jsonException(j);
+                throw TactProductException.jsonOperateError(hashValue.toString(), j);
             }
         }
         return Optional.empty();
@@ -43,7 +43,7 @@ public class CategorySnapshotRepository {
             String value = SerializeUtil.objectToJson(category);
             redisTemplate.opsForHash().put(Category.class, category.getId(), value);
         } catch (JsonProcessingException e) {
-            throw TactProductException.jsonException(e);
+            throw TactProductException.jsonOperateError(category.toString(), e);
         }
     }
 

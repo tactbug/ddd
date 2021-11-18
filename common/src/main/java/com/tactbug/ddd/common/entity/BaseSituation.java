@@ -10,7 +10,6 @@ public class BaseSituation {
     protected Long domainId;
     protected Long lastEventId;
     protected Integer lastVersion;
-    protected boolean deleted;
 
     protected BaseSituation(){}
 
@@ -18,7 +17,6 @@ public class BaseSituation {
         domainId = event.getDomainId();
         lastEventId = event.getId();
         lastVersion = event.getDomainVersion();
-        deleted = false;
     }
 
     protected void update(Event<? extends BaseDomain> event){
@@ -26,11 +24,6 @@ public class BaseSituation {
         lastVersion = event.getDomainVersion();
     }
 
-    protected void delete(Event<? extends BaseDomain> event){
-        lastEventId = event.getId();
-        lastVersion = event.getDomainVersion();
-        deleted = true;
-    }
 
     public Long getDomainId() {
         return domainId;
@@ -46,14 +39,6 @@ public class BaseSituation {
 
     public void setLastEventId(Long lastEventId) {
         this.lastEventId = lastEventId;
-    }
-
-    public boolean isDeleted() {
-        return deleted;
-    }
-
-    public void setDeleted(boolean deleted) {
-        this.deleted = deleted;
     }
 
     public Integer getLastVersion() {
