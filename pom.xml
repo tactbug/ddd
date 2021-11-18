@@ -10,7 +10,6 @@
     <modules>
         <module>product</module>
         <module>common</module>
-        <module>query</module>
     </modules>
 
     <packaging>pom</packaging>
