@@ -43,11 +43,11 @@ public class EventPublisher {
                 throw TactProductException.jsonOperateError(eventGroup.toString(), e);
             }
             ListenableFuture<SendResult<String, String>> send = kafkaTemplate.send(TactProductApplication.APPLICATION_NAME + "-" + topic.getName(), "" + domainId, json);
-            send.addCallback(result -> doPublish(events),
+            send.addCallback(System.out::println,
                     ex ->
                     {
                         log.error("事件发布" + eventGroup.toString() + "失败", ex);
-                        throw TactProductException.eventOperateError("事件发布" + eventGroup.toString() + "失败", ex);
+                        throw TactProductException.eventOperateError("事件发布" + eventGroup + "失败", ex);
                     }
             );
         });

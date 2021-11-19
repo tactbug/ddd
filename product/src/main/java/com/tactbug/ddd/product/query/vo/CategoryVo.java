@@ -1,13 +1,22 @@
 package com.tactbug.ddd.product.query.vo;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.tactbug.ddd.common.entity.BaseDomain;
 import com.tactbug.ddd.common.entity.Event;
+import com.tactbug.ddd.common.utils.SerializeUtil;
+import com.tactbug.ddd.product.assist.exception.TactProductException;
+import com.tactbug.ddd.product.domain.category.Category;
+import com.tactbug.ddd.product.domain.category.CategoryEvent;
 import com.tactbug.ddd.product.domain.category.event.CategoryCreated;
+import com.tactbug.ddd.product.domain.category.event.CategoryNameUpdated;
+import com.tactbug.ddd.product.domain.category.event.CategoryParentChanged;
+import com.tactbug.ddd.product.domain.category.event.CategoryRemarkUpdated;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.Hibernate;
+import org.springframework.beans.BeanUtils;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -15,8 +24,10 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import java.time.ZonedDateTime;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -37,13 +48,38 @@ public class CategoryVo extends BaseDomain{
     private List<BrandVo> brandList;
     private boolean deleted;
 
-    public void accept(Collection<? extends Event<? extends BaseDomain>> events){
-
+    public void initBase(Category category){
+        BeanUtils.copyProperties(category, this);
     }
 
-    private void acceptCategoryCreated(CategoryCreated categoryCreated){
-        CategoryVo categoryVo = new CategoryVo();
-        categoryVo.setId(categoryCreated.getDomainId());
+    public void acceptNameUpdated(CategoryNameUpdated categoryNameUpdated){
+        try {
+            HashMap<String, Object> dataMap = SerializeUtil.jsonToObject(categoryNameUpdated.getData(), new TypeReference<>() {
+            });
+            this.setName(dataMap.get("name").toString());
+            this.setVersion(categoryNameUpdated.getDomainVersion());
+            this.setUpdateTime(categoryNameUpdated.getCreateTime());
+        } catch (Exception e) {
+            throw TactProductException.replayError("[" + categoryNameUpdated.getData() + "]视图基础信息构建异常", e);
+        }
+    }
+
+    public void acceptRemarkUpdated(CategoryRemarkUpdated categoryRemarkUpdated){
+        try {
+            HashMap<String, Object> dataMap = SerializeUtil.jsonToObject(categoryRemarkUpdated.getData(), new TypeReference<>() {
+            });
+            this.setName(dataMap.get("remark").toString());
+            this.setVersion(categoryRemarkUpdated.getDomainVersion());
+            this.setUpdateTime(categoryRemarkUpdated.getCreateTime());
+        } catch (Exception e) {
+            throw TactProductException.replayError("[" + categoryRemarkUpdated.getData() + "]视图基础信息构建异常", e);
+        }
+    }
+
+    public void acceptParentChanged(CategoryParentChanged categoryParentChanged, CategoryVo parent){
+        this.setParent(parent);
+        this.setVersion(categoryParentChanged.getDomainVersion());
+        this.setUpdateTime(categoryParentChanged.getCreateTime());
     }
 
     @Override

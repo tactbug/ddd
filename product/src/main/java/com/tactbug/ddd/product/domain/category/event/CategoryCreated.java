@@ -47,6 +47,15 @@ public class CategoryCreated extends CategoryEvent {
 
     public void doAccept(CategoryVo categoryVo){
         super.doAccept(categoryVo);
+        try {
+            HashMap<String, Object> dataMap = SerializeUtil.jsonToObject(data, new TypeReference<>() {
+            });
+            categoryVo.setName(dataMap.get("name").toString());
+            categoryVo.setRemark(dataMap.get("remark").toString());
+            categoryVo.setDeleted(false);
+        } catch (Exception e) {
+            throw TactProductException.replayError("[" + categoryVo.getId() + "]视图基础信息构建异常", e);
+        }
     }
 
     private void assembleData(Category category) {
