@@ -1,6 +1,5 @@
 package com.tactbug.ddd.product.outbound.repository.jpa.brand;
 
-import com.tactbug.ddd.common.entity.EventType;
 import com.tactbug.ddd.product.domain.brand.event.BrandEvent;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

@@ -27,13 +27,24 @@ public class CategoryHandler {
     private CategoryRepository categoryRepository;
 
     public void accept(CategoryEvent categoryEvent){
-        switch (categoryEvent){
-            case CategoryCreated c -> acceptCreate(c);
-            case CategoryNameUpdated c -> acceptUpdateName(c);
-            case CategoryRemarkUpdated c -> acceptRemarkUpdated(c);
-            case CategoryParentChanged c -> acceptParentChanged(c);
-            default -> throw new IllegalStateException("Unexpected value: " + categoryEvent);
+        Class<?> eventType = categoryEvent.getEventType();
+        if (eventType.equals(CategoryCreated.class)){
+            acceptCreate((CategoryCreated) categoryEvent);
+            return;
         }
+        if (eventType.equals(CategoryNameUpdated.class)){
+            acceptNameUpdated((CategoryNameUpdated) categoryEvent);
+            return;
+        }
+        if (eventType.equals(CategoryRemarkUpdated.class)){
+            acceptRemarkUpdated((CategoryRemarkUpdated) categoryEvent);
+            return;
+        }
+        if (eventType.equals(CategoryParentChanged.class)){
+            acceptParentChanged((CategoryParentChanged) categoryEvent);
+            return;
+        }
+        throw TactProductException.eventOperateError("不支持的事件类型:[" + categoryEvent + "]", null);
     }
 
     private void acceptCreate(CategoryCreated categoryCreated){
@@ -58,7 +69,7 @@ public class CategoryHandler {
         categoryVoRepository.save(categoryVo);
     }
 
-    private void acceptUpdateName(CategoryNameUpdated categoryNameUpdated){
+    private void acceptNameUpdated(CategoryNameUpdated categoryNameUpdated){
         CategoryVo categoryVo = categoryVoRepository.findById(categoryNameUpdated.getDomainId())
                 .orElseThrow(() -> TactProductException.resourceOperateError("分类视图[" + categoryNameUpdated.getDomainId() + "]不存在", null));
         categoryVo.acceptNameUpdated(categoryNameUpdated);

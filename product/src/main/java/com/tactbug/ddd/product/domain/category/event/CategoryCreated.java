@@ -9,6 +9,7 @@ import com.tactbug.ddd.product.domain.category.CategoryEvent;
 import com.tactbug.ddd.product.query.vo.CategoryVo;
 
 import javax.persistence.Entity;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -19,7 +20,7 @@ import java.util.Objects;
  * @Time 2021/10/3 21:39
  */
 @Entity
-public class CategoryCreated extends CategoryEvent {
+public class CategoryCreated extends CategoryEvent implements Serializable {
 
     public CategoryCreated(Long eventId, Category category, Long operator) {
         super(eventId, category, operator);

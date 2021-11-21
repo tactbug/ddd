@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.tactbug.ddd.common.entity.BaseDomain;
 import com.tactbug.ddd.common.entity.Event;
-import com.tactbug.ddd.common.entity.EventType;
 import com.tactbug.ddd.common.utils.IdUtil;
 import com.tactbug.ddd.common.utils.SerializeUtil;
 import com.tactbug.ddd.product.assist.exception.TactProductException;
