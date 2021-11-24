@@ -1,7 +1,7 @@
 package com.tactbug.ddd.product.inbound.http.advice;
 
 import com.tactbug.ddd.common.entity.Result;
-import com.tactbug.ddd.product.assist.exception.TactProductException;
+import com.tactbug.ddd.common.exceptions.TactException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -22,8 +22,8 @@ public class ExceptionAdvice {
 
     private static final Integer PRODUCT_EXCEPTION_CODE = 11001;
 
-    @ExceptionHandler(TactProductException.class)
-    public Result<String> tactException(TactProductException t){
+    @ExceptionHandler(TactException.class)
+    public Result<String> tactException(TactException t){
         if (Objects.isNull(t.getException())){
             return Result.fail(PRODUCT_EXCEPTION_CODE, t.getMessage(), t.getMessage());
         }else {

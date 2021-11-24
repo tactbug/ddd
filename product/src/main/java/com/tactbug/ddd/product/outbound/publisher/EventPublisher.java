@@ -5,7 +5,7 @@ import com.tactbug.ddd.common.entity.BaseDomain;
 import com.tactbug.ddd.common.entity.Event;
 import com.tactbug.ddd.common.utils.SerializeUtil;
 import com.tactbug.ddd.product.TactProductApplication;
-import com.tactbug.ddd.product.assist.exception.TactProductException;
+import com.tactbug.ddd.common.exceptions.TactException;
 import com.tactbug.ddd.product.domain.brand.event.BrandEvent;
 import com.tactbug.ddd.product.domain.category.CategoryEvent;
 import com.tactbug.ddd.product.outbound.repository.jpa.brand.BrandEventRepository;
@@ -40,14 +40,14 @@ public class EventPublisher {
             try {
                 json = SerializeUtil.objectToJson(eventGroup);
             } catch (JsonProcessingException e) {
-                throw TactProductException.jsonOperateError(eventGroup.toString(), e);
+                throw TactException.serializeOperateError(eventGroup.toString(), e);
             }
             ListenableFuture<SendResult<String, String>> send = kafkaTemplate.send(TactProductApplication.APPLICATION_NAME + "-" + topic.getName(), "" + domainId, json);
             send.addCallback(result -> doPublish(events),
                     ex ->
                     {
                         log.error("事件发布" + eventGroup.toString() + "失败", ex);
-                        throw TactProductException.eventOperateError("事件发布" + eventGroup + "失败", ex);
+                        throw TactException.eventOperateError("事件发布" + eventGroup + "失败", ex);
                     }
             );
         });
@@ -74,7 +74,7 @@ public class EventPublisher {
             List<Long> ids = eventGroup.stream().map(CategoryEvent::getId).collect(Collectors.toList());
             List<CategoryEvent> currentEvents = categoryEventRepository.findAllById(ids);
             if (currentEvents.size() != ids.size()){
-                throw TactProductException.eventOperateError("商品分类待发布事件数量异常, 待发布[" + ids.size() + "]件, 现有[" + currentEvents.size() + "]件", null);
+                throw TactException.eventOperateError("商品分类待发布事件数量异常, 待发布[" + ids.size() + "]件, 现有[" + currentEvents.size() + "]件", null);
             }
             currentEvents.forEach(Event::publish);
             categoryEventRepository.saveAll(currentEvents);
@@ -89,7 +89,7 @@ public class EventPublisher {
             List<Long> ids = eventGroup.stream().map(BrandEvent::getId).collect(Collectors.toList());
             List<BrandEvent> currentEvents = brandEventRepository.findAllById(ids);
             if (currentEvents.size() != ids.size()){
-                throw TactProductException.eventOperateError("品牌待发布事件数量异常, 待发布[" + ids.size() + "]件, 现有[" + currentEvents.size() + "]件", null);
+                throw TactException.eventOperateError("品牌待发布事件数量异常, 待发布[" + ids.size() + "]件, 现有[" + currentEvents.size() + "]件", null);
             }
             currentEvents.forEach(Event::publish);
             brandEventRepository.saveAll(currentEvents);

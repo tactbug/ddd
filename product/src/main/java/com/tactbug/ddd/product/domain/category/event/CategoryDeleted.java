@@ -3,7 +3,7 @@ package com.tactbug.ddd.product.domain.category.event;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.tactbug.ddd.common.utils.SerializeUtil;
-import com.tactbug.ddd.product.assist.exception.TactProductException;
+import com.tactbug.ddd.common.exceptions.TactException;
 import com.tactbug.ddd.product.domain.category.Category;
 import com.tactbug.ddd.product.domain.category.CategoryEvent;
 
@@ -34,7 +34,7 @@ public class CategoryDeleted extends CategoryEvent {
         try {
             category.setDeleted(true);
         } catch (Exception e) {
-            throw TactProductException.replayError("[" + category.getId() + "]删除数据异常", null);
+            throw TactException.replayError("[" + category.getId() + "]删除数据异常", null);
         }
     }
 
@@ -44,7 +44,7 @@ public class CategoryDeleted extends CategoryEvent {
         try {
             data = SerializeUtil.mapToString(map);
         } catch (JsonProcessingException e) {
-            throw TactProductException.jsonOperateError(map.toString(), e);
+            throw TactException.serializeOperateError(map.toString(), e);
         }
     }
 
@@ -55,7 +55,7 @@ public class CategoryDeleted extends CategoryEvent {
             data = SerializeUtil.jsonToObject(this.data, new TypeReference<>() {
             });
         } catch (JsonProcessingException e) {
-            throw TactProductException.jsonOperateError(this.data, e);
+            throw TactException.serializeOperateError(this.data, e);
         }
         if (Objects.isNull(data.get("id")) || !SerializeUtil.isNumber(data.get("id").toString())){
             throw new IllegalStateException("商品分类溯源事件[" + getId() + "]聚合ID状态异常");

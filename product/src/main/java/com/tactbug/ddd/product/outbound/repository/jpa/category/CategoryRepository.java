@@ -1,7 +1,7 @@
 package com.tactbug.ddd.product.outbound.repository.jpa.category;
 
 import com.tactbug.ddd.common.entity.Event;
-import com.tactbug.ddd.product.assist.exception.TactProductException;
+import com.tactbug.ddd.common.exceptions.TactException;
 import com.tactbug.ddd.product.domain.category.Category;
 import com.tactbug.ddd.product.domain.category.CategoryEvent;
 import com.tactbug.ddd.product.domain.category.CategorySituation;
@@ -94,7 +94,7 @@ public class CategoryRepository {
 
     public Category getOne(Long id){
         if (!isExists(id)){
-            throw TactProductException.resourceOperateError("分类[" + id + "]不存在或已删除", null);
+            throw TactException.resourceOperateError("分类[" + id + "]不存在或已删除", null);
         }
         Category category = getSnapshot(id).orElse(new Category());
         List<CategoryEvent> events =
@@ -109,7 +109,7 @@ public class CategoryRepository {
 
     private void checkExists(Long id){
         if (!isExists(id)){
-            throw TactProductException.resourceOperateError("分类[" + id + "]不存在或已删除", null);
+            throw TactException.resourceOperateError("分类[" + id + "]不存在或已删除", null);
         }
     }
 
@@ -131,7 +131,7 @@ public class CategoryRepository {
             return;
         }
         CategorySituation categorySituation = situationRepository.findById(event.getDomainId())
-                .orElseThrow(() -> TactProductException.resourceOperateError("分类[" + event.getDomainId() + "]状态错误", null));
+                .orElseThrow(() -> TactException.resourceOperateError("分类[" + event.getDomainId() + "]状态错误", null));
         if (event instanceof CategoryDeleted){
             situationRepository.delete(categorySituation);
         }else {

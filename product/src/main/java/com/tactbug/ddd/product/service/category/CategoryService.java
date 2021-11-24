@@ -2,7 +2,7 @@ package com.tactbug.ddd.product.service.category;
 
 import com.tactbug.ddd.common.utils.IdUtil;
 import com.tactbug.ddd.product.TactProductApplication;
-import com.tactbug.ddd.product.assist.exception.TactProductException;
+import com.tactbug.ddd.common.exceptions.TactException;
 import com.tactbug.ddd.product.domain.category.Category;
 import com.tactbug.ddd.product.domain.category.command.CategoryCommand;
 import com.tactbug.ddd.product.domain.category.command.CreateCategory;
@@ -18,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * @Author tactbug
@@ -42,7 +41,7 @@ public class CategoryService {
 
     public Category createCategory(CreateCategory createCategory){
         if (categoryRepository.isExistsSameName(createCategory.name())){
-            throw TactProductException.resourceOperateError("已经存在同名[" + createCategory.name() + "]的分类", null);
+            throw TactException.resourceOperateError("已经存在同名[" + createCategory.name() + "]的分类", null);
         }
         List<CategoryEvent> events = new ArrayList<>();
         Category category = Category.generate(ID_UTIL, createCategory, events);
@@ -56,11 +55,11 @@ public class CategoryService {
 
     public Category updateCategory(CategoryCommand categoryCommand){
         if (!categoryRepository.isExists(categoryCommand.getId())){
-            throw TactProductException.resourceOperateError("分类[" + categoryCommand.getId() + "]不存在或已删除", null);
+            throw TactException.resourceOperateError("分类[" + categoryCommand.getId() + "]不存在或已删除", null);
         }
         Category category = categoryRepository.getOne(categoryCommand.getId());
         if (!category.getName().equals(categoryCommand.getName()) && categoryRepository.isExistsSameName(categoryCommand.getName())){
-            throw TactProductException.resourceOperateError("分类[" + categoryCommand.getName() + "]已经存在", null);
+            throw TactException.resourceOperateError("分类[" + categoryCommand.getName() + "]已经存在", null);
         }
         List<CategoryEvent> events = category.update(ID_UTIL, categoryCommand);
         categoryRepository.execute(events);

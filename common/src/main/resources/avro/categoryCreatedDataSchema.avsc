@@ -1,0 +1,15 @@
+{
+  "type" : "record",
+  "name" : "CategoryCreatedDataAvro",
+  "namespace" : "com.tactbug.ddd.common.avro.product",
+  "fields" : [ {
+    "name" : "name",
+    "type" : "string"
+  }, {
+    "name" : "remark",
+    "type" : "string"
+  }, {
+    "name" : "parentId",
+    "type" : "long"
+  } ]
+}

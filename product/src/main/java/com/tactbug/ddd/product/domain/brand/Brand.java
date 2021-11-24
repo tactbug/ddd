@@ -6,7 +6,7 @@ import com.tactbug.ddd.common.entity.BaseDomain;
 import com.tactbug.ddd.common.entity.Event;
 import com.tactbug.ddd.common.utils.IdUtil;
 import com.tactbug.ddd.common.utils.SerializeUtil;
-import com.tactbug.ddd.product.assist.exception.TactProductException;
+import com.tactbug.ddd.common.exceptions.TactException;
 import com.tactbug.ddd.product.domain.brand.command.*;
 import com.tactbug.ddd.product.domain.brand.event.*;
 import lombok.Getter;
@@ -112,7 +112,7 @@ public class Brand extends BaseDomain {
         try {
             data = SerializeUtil.jsonToObject(json, new TypeReference<>() {});
         } catch (JsonProcessingException e) {
-            throw TactProductException.jsonOperateError(json, e);
+            throw TactException.serializeOperateError(json, e);
         }
         replayAttr(data);
     }

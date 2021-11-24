@@ -2,7 +2,7 @@ package com.tactbug.ddd.product.service.brand;
 
 import com.tactbug.ddd.common.utils.IdUtil;
 import com.tactbug.ddd.product.TactProductApplication;
-import com.tactbug.ddd.product.assist.exception.TactProductException;
+import com.tactbug.ddd.common.exceptions.TactException;
 import com.tactbug.ddd.product.domain.brand.Brand;
 import com.tactbug.ddd.product.domain.brand.command.BrandCommand;
 import com.tactbug.ddd.product.domain.brand.command.CreateBrand;
@@ -33,7 +33,7 @@ public class BrandService {
 
     public Brand update(BrandCommand brandCommand){
         Brand brand = brandRepository.getOneById(brandCommand.getId())
-                .orElseThrow(() -> TactProductException.resourceOperateError("品牌[" + brandCommand.getId() + "]不存在", null));
+                .orElseThrow(() -> TactException.resourceOperateError("品牌[" + brandCommand.getId() + "]不存在", null));
         List<BrandEvent> events = brand.update(BRAND_ID_UTIL, brandCommand);
         if (!events.isEmpty()){
             brandRepository.update(brand, events);

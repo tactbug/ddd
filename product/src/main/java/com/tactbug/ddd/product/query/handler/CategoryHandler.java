@@ -2,7 +2,7 @@ package com.tactbug.ddd.product.query.handler;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.tactbug.ddd.common.utils.SerializeUtil;
-import com.tactbug.ddd.product.assist.exception.TactProductException;
+import com.tactbug.ddd.common.exceptions.TactException;
 import com.tactbug.ddd.product.domain.category.Category;
 import com.tactbug.ddd.product.domain.category.CategoryEvent;
 import com.tactbug.ddd.product.domain.category.event.CategoryCreated;
@@ -44,7 +44,7 @@ public class CategoryHandler {
             acceptParentChanged((CategoryParentChanged) categoryEvent);
             return;
         }
-        throw TactProductException.eventOperateError("不支持的事件类型:[" + categoryEvent + "]", null);
+        throw TactException.eventOperateError("不支持的事件类型:[" + categoryEvent + "]", null);
     }
 
     private void acceptCreate(CategoryCreated categoryCreated){
@@ -54,7 +54,7 @@ public class CategoryHandler {
             });
             parentId = Long.valueOf(dataMap.get("parentId").toString());
         } catch (Exception e) {
-            throw TactProductException.replayError("[" + categoryCreated.getData() + "]视图基础信息构建异常", e);
+            throw TactException.replayError("[" + categoryCreated.getData() + "]视图基础信息构建异常", e);
         }
         CategoryVo categoryVo = new CategoryVo();
         categoryCreated.doAccept(categoryVo);
@@ -71,21 +71,21 @@ public class CategoryHandler {
 
     private void acceptNameUpdated(CategoryNameUpdated categoryNameUpdated){
         CategoryVo categoryVo = categoryVoRepository.findById(categoryNameUpdated.getDomainId())
-                .orElseThrow(() -> TactProductException.resourceOperateError("分类视图[" + categoryNameUpdated.getDomainId() + "]不存在", null));
+                .orElseThrow(() -> TactException.resourceOperateError("分类视图[" + categoryNameUpdated.getDomainId() + "]不存在", null));
         categoryVo.acceptNameUpdated(categoryNameUpdated);
         categoryVoRepository.save(categoryVo);
     }
 
     private void acceptRemarkUpdated(CategoryRemarkUpdated categoryRemarkUpdated){
         CategoryVo categoryVo = categoryVoRepository.findById(categoryRemarkUpdated.getDomainId())
-                .orElseThrow(() -> TactProductException.resourceOperateError("分类视图[" + categoryRemarkUpdated.getDomainId() + "]不存在", null));
+                .orElseThrow(() -> TactException.resourceOperateError("分类视图[" + categoryRemarkUpdated.getDomainId() + "]不存在", null));
         categoryVo.acceptRemarkUpdated(categoryRemarkUpdated);
         categoryVoRepository.save(categoryVo);
     }
 
     private void acceptParentChanged(CategoryParentChanged categoryParentChanged){
         CategoryVo categoryVo = categoryVoRepository.findById(categoryParentChanged.getDomainId())
-                .orElseThrow(() -> TactProductException.resourceOperateError("分类视图[" + categoryParentChanged.getDomainId() + "]不存在", null));
+                .orElseThrow(() -> TactException.resourceOperateError("分类视图[" + categoryParentChanged.getDomainId() + "]不存在", null));
         try {
             Map<String, Object> data = SerializeUtil.jsonToObject(categoryParentChanged.getData(), new TypeReference<>() {
             });
@@ -96,12 +96,12 @@ public class CategoryHandler {
                 parent.initBase(Category.ROOT_CATEGORY);
             }else {
                 parent = categoryVoRepository.findById(parentId)
-                        .orElseThrow(() -> TactProductException.resourceOperateError("父分类视图[" + parentId + "]已删除或不存在", null));
+                        .orElseThrow(() -> TactException.resourceOperateError("父分类视图[" + parentId + "]已删除或不存在", null));
             }
             categoryVo.acceptParentChanged(categoryParentChanged, parent);
             categoryVoRepository.save(categoryVo);
         } catch (Exception e) {
-            throw TactProductException.replayError("[" + categoryParentChanged.getData() + "]视图基础信息构建异常", e);
+            throw TactException.replayError("[" + categoryParentChanged.getData() + "]视图基础信息构建异常", e);
         }
     }
 }

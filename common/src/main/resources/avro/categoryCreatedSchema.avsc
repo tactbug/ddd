@@ -1,0 +1,46 @@
+{
+  "type" : "record",
+  "name" : "CategoryCreatedAvro",
+  "namespace" : "com.tactbug.ddd.common.avro.product",
+  "fields" : [ {
+    "name" : "CategoryCreatedDataAvro",
+    "type" : {
+      "type" : "record",
+      "name" : "CategoryCreatedDataAvro",
+      "fields" : [ {
+        "name" : "name",
+        "type" : "string"
+      }, {
+        "name" : "remark",
+        "type" : "string"
+      }, {
+        "name" : "parentId",
+        "type" : "long"
+      } ]
+    }
+  }, {
+    "name" : "id",
+    "type" : "long"
+  }, {
+    "name" : "version",
+    "type" : "int"
+  }, {
+    "name" : "createTime",
+    "type" : "string"
+  }, {
+    "name" : "updateTime",
+    "type" : "string"
+  }, {
+    "name" : "domainId",
+    "type" : "long"
+  }, {
+    "name" : "domainVersion",
+    "type" : "int"
+  }, {
+    "name" : "eventType",
+    "type" : "string"
+  }, {
+    "name" : "operator",
+    "type" : "long"
+  } ]
+}

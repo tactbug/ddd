@@ -1,7 +1,6 @@
 package com.tactbug.ddd.product.domain.brand.command;
 
 import com.tactbug.ddd.common.entity.BaseCommand;
-import com.tactbug.ddd.product.assist.exception.TactProductException;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 

@@ -1,6 +1,6 @@
 package com.tactbug.ddd.product.outbound.publisher;
 
-import com.tactbug.ddd.product.assist.exception.TactProductException;
+import com.tactbug.ddd.common.exceptions.TactException;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -20,6 +20,6 @@ public enum EventTopics {
                 return e;
             }
         }
-        throw TactProductException.unKnowEnumError(topic, null);
+        throw TactException.unKnowEnumError(topic, null);
     }
 }

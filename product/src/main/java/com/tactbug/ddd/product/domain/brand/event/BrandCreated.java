@@ -3,7 +3,7 @@ package com.tactbug.ddd.product.domain.brand.event;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.tactbug.ddd.common.utils.SerializeUtil;
-import com.tactbug.ddd.product.assist.exception.TactProductException;
+import com.tactbug.ddd.common.exceptions.TactException;
 import com.tactbug.ddd.product.domain.brand.Brand;
 
 import javax.persistence.Entity;
@@ -29,7 +29,7 @@ public class BrandCreated extends BrandEvent{
         try {
             this.data = SerializeUtil.mapToString(map);
         } catch (JsonProcessingException e) {
-            throw TactProductException.jsonOperateError(this.data, e);
+            throw TactException.serializeOperateError(this.data, e);
         }
     }
 
@@ -40,7 +40,7 @@ public class BrandCreated extends BrandEvent{
             data = SerializeUtil.jsonToObject(this.data, new TypeReference<>() {
             });
         } catch (JsonProcessingException e) {
-            throw TactProductException.jsonOperateError(this.data, e);
+            throw TactException.serializeOperateError(this.data, e);
         }
         if (Objects.isNull(data.get("name")) || data.get("name").toString().isBlank()){
             throw new IllegalStateException("品牌溯源事件[" + getId() + "]聚合名称不能为空");

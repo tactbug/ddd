@@ -5,7 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.tactbug.ddd.common.entity.BaseDomain;
 import com.tactbug.ddd.common.utils.SerializeUtil;
-import com.tactbug.ddd.product.assist.exception.TactProductException;
+import com.tactbug.ddd.common.exceptions.TactException;
 import com.tactbug.ddd.product.domain.brand.Brand;
 import com.tactbug.ddd.product.domain.category.Category;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -28,7 +28,7 @@ public class BrandSnapshotRepository {
                 });
                 return Objects.nonNull(brand) ? Optional.of(brand) : Optional.empty();
             }catch (JacksonException j){
-                throw TactProductException.jsonOperateError(hashValue.toString(), j);
+                throw TactException.serializeOperateError(hashValue.toString(), j);
             }
         }
         return Optional.empty();
@@ -39,7 +39,7 @@ public class BrandSnapshotRepository {
             String value = SerializeUtil.objectToJson(brand);
             redisTemplate.opsForHash().put(Category.class, brand.getId(), value);
         } catch (JsonProcessingException e) {
-            throw TactProductException.jsonOperateError(brand.toString(), e);
+            throw TactException.serializeOperateError(brand.toString(), e);
         }
     }
 }

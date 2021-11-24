@@ -3,7 +3,7 @@ package com.tactbug.ddd.product.domain.category;
 import com.tactbug.ddd.common.entity.BaseDomain;
 import com.tactbug.ddd.common.entity.Event;
 import com.tactbug.ddd.common.utils.IdUtil;
-import com.tactbug.ddd.product.assist.exception.TactProductException;
+import com.tactbug.ddd.common.exceptions.TactException;
 import com.tactbug.ddd.product.domain.category.command.*;
 import com.tactbug.ddd.product.domain.category.event.*;
 import com.tactbug.ddd.product.query.ProductQuery;
@@ -116,10 +116,10 @@ public class Category extends BaseDomain {
             return events;
         }
         if (!categoryVo.getChildren().isEmpty()){
-            throw TactProductException.resourceOperateError("当前分类还有子分类, 不能删除", null);
+            throw TactException.resourceOperateError("当前分类还有子分类, 不能删除", null);
         }
         if (!categoryVo.getBrandList().isEmpty()){
-            throw TactProductException.resourceOperateError("当前分类下还有绑定品牌, 不能删除", null);
+            throw TactException.resourceOperateError("当前分类下还有绑定品牌, 不能删除", null);
         }
         update();
         events.add(new CategoryDeleted(idUtil.getId(), this, deleteCategory.operator()));
