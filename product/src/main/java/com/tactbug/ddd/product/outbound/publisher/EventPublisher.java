@@ -18,11 +18,11 @@ import javax.transaction.Transactional;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
 @Slf4j
-@Transactional
 public class EventPublisher {
 
     @Resource
@@ -42,7 +42,9 @@ public class EventPublisher {
                         byte[] data = serializeToAvro(e);
                         bytesKafkaTemplate.send(TactProductApplication.APPLICATION_NAME + "-" + topic.getName(), "" + domainId, data)
                                 .addCallback(
-                                        result -> doPublish(e),
+                                        result -> {
+                                            doPublish(e);
+                                        },
                                         ex -> {
                                             log.error("事件发布" + e + "失败", ex);
                                             throw TactException.eventOperateError("事件发布" + e + "失败", ex);
@@ -75,10 +77,18 @@ public class EventPublisher {
     }
 
     private void categoryEventPublish(CategoryEvent categoryEvent){
-        CategoryEvent currentEvent = categoryEventRepository.findById(categoryEvent.getId())
-                .orElseThrow(() -> TactException.eventOperateError("分类事件[" + categoryEvent + "]不存在", null));
-        categoryEvent.publish();
-        categoryEventRepository.save(currentEvent);
+        int retry = 10;
+        while (retry > 0){
+            Optional<CategoryEvent> optional = categoryEventRepository.findById(categoryEvent.getId());
+            if (optional.isPresent()){
+                CategoryEvent currentEvent = optional.get();
+                currentEvent.publish();
+                categoryEventRepository.save(currentEvent);
+                return;
+            }
+            retry --;
+        }
+        log.error("事件[" + categoryEvent + "]提交异常, 请检查");
     }
 
     private void brandEventPublish(BrandEvent brandEvent){

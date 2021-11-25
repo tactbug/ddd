@@ -36,13 +36,13 @@ public class EventDispatcher {
     public void handler(
             @Header(KafkaHeaders.OFFSET) List<Long> offsets,
             @Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) String key,
-            @Payload byte[] data,
+            @Payload String data,
             Acknowledgment ack
     ){
         System.out.println("offset: " + offsets.toString());
         System.out.println("domainID: " + key);
         CategoryCreatedAvro categoryCreatedAvro = AvroDeSerialize.categoryCreatedAvro(data);
-        System.out.println("payload: " + categoryCreatedAvro.toString());
+        System.out.println("payload: " + categoryCreatedAvro);
         ack.acknowledge();
     }
 

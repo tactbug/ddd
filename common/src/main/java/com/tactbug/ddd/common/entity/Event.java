@@ -112,4 +112,20 @@ public class Event<T extends BaseDomain> extends BaseDomain {
     public void setEventType(Class<?> eventType) {
         this.eventType = eventType;
     }
+
+    @Override
+    public String toString() {
+        return "Event{" +
+                "id=" + id +
+                ", version=" + version +
+                ", createTime=" + createTime +
+                ", updateTime=" + updateTime +
+                ", domainId=" + domainId +
+                ", domainVersion=" + domainVersion +
+                ", eventType=" + eventType +
+                ", operator=" + operator +
+                ", data='" + data + '\'' +
+                ", published=" + published +
+                '}';
+    }
 }

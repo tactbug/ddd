@@ -11,16 +11,16 @@ import java.io.IOException;
 import java.util.Arrays;
 
 public class AvroDeSerialize {
-    public static CategoryCreatedAvro categoryCreatedAvro(byte[] data){
+    public static CategoryCreatedAvro categoryCreatedAvro(String data){
         DatumReader<CategoryCreatedAvro> reader
                 = new SpecificDatumReader<>(CategoryCreatedAvro.class);
         Decoder decoder;
         try {
             decoder = DecoderFactory.get().jsonDecoder(
-                    CategoryCreatedAvro.getClassSchema(), new String(data));
+                    CategoryCreatedAvro.getClassSchema(), data);
             return reader.read(null, decoder);
         } catch (IOException e) {
-            throw TactException.serializeOperateError("[" + Arrays.toString(data) + "]反序列化失败", e);
+            throw TactException.serializeOperateError("[" + data + "]反序列化失败", e);
         }
     }
 }
