@@ -1,4 +1,4 @@
-package com.tactbug.ddd.common.avro.schema;
+package com.tactbug.ddd.common.avro;
 
 import com.tactbug.ddd.common.avro.product.CategoryCreatedAvro;
 import com.tactbug.ddd.common.exceptions.TactException;

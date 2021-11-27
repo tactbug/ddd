@@ -1,6 +1,7 @@
 package com.tactbug.ddd.product.query.handler;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.tactbug.ddd.common.avro.product.CategoryCreatedAvro;
 import com.tactbug.ddd.common.utils.SerializeUtil;
 import com.tactbug.ddd.common.exceptions.TactException;
 import com.tactbug.ddd.product.domain.category.Category;
@@ -26,41 +27,13 @@ public class CategoryHandler {
     @Resource
     private CategoryRepository categoryRepository;
 
-    public void accept(CategoryEvent categoryEvent){
-        Class<?> eventType = categoryEvent.getEventType();
-        if (eventType.equals(CategoryCreated.class)){
-            acceptCreate((CategoryCreated) categoryEvent);
-            return;
-        }
-        if (eventType.equals(CategoryNameUpdated.class)){
-            acceptNameUpdated((CategoryNameUpdated) categoryEvent);
-            return;
-        }
-        if (eventType.equals(CategoryRemarkUpdated.class)){
-            acceptRemarkUpdated((CategoryRemarkUpdated) categoryEvent);
-            return;
-        }
-        if (eventType.equals(CategoryParentChanged.class)){
-            acceptParentChanged((CategoryParentChanged) categoryEvent);
-            return;
-        }
-        throw TactException.eventOperateError("不支持的事件类型:[" + categoryEvent + "]", null);
-    }
-
-    private void acceptCreate(CategoryCreated categoryCreated){
-        Long parentId;
-        try {
-            HashMap<String, Object> dataMap = SerializeUtil.jsonToObject(categoryCreated.getData(), new TypeReference<>() {
-            });
-            parentId = Long.valueOf(dataMap.get("parentId").toString());
-        } catch (Exception e) {
-            throw TactException.replayError("[" + categoryCreated.getData() + "]视图基础信息构建异常", e);
-        }
+    public void acceptCreate(CategoryCreatedAvro categoryCreatedAvro){
         CategoryVo categoryVo = new CategoryVo();
-        categoryCreated.doAccept(categoryVo);
+        Category category = categoryRepository.getOne(categoryCreatedAvro.getDomainId());
+        categoryVo.initBase(category);
         CategoryVo parentVo = new CategoryVo();
-        if (!parentId.equals(Category.ROOT_CATEGORY_ID)){
-            Category parent = categoryRepository.getOne(parentId);
+        if (!category.getParentId().equals(Category.ROOT_CATEGORY_ID)){
+            Category parent = categoryRepository.getOne(category.getParentId());
             parentVo.initBase(parent);
         }else {
             parentVo.initBase(Category.ROOT_CATEGORY);

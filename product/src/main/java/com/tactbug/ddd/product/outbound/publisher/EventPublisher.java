@@ -14,7 +14,6 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import javax.transaction.Transactional;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -42,9 +41,7 @@ public class EventPublisher {
                         byte[] data = serializeToAvro(e);
                         bytesKafkaTemplate.send(TactProductApplication.APPLICATION_NAME + "-" + topic.getName(), "" + domainId, data)
                                 .addCallback(
-                                        result -> {
-                                            doPublish(e);
-                                        },
+                                        result -> doPublish(e),
                                         ex -> {
                                             log.error("事件发布" + e + "失败", ex);
                                             throw TactException.eventOperateError("事件发布" + e + "失败", ex);

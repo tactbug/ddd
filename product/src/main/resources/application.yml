@@ -6,3 +6,10 @@ spring:
   kafka:
     listener:
       ack-mode: manual
+    consumer:
+      auto-offset-reset: latest
+  jpa:
+    hibernate:
+      ddl-auto: update
+  datasource:
+    driver-class-name: org.postgresql.Driver
