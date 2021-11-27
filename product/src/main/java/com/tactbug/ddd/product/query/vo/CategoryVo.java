@@ -15,6 +15,7 @@ import lombok.ToString;
 import org.springframework.beans.BeanUtils;
 
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import java.util.HashMap;
@@ -34,6 +35,7 @@ public class CategoryVo extends BaseDomain{
     @ToString.Exclude
     private List<CategoryVo> children;
     @ManyToOne
+    @ToString.Exclude
     private CategoryVo parent;
     @OneToMany
     @ToString.Exclude
