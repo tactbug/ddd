@@ -1,4 +1,4 @@
-package com.tactbug.ddd.common.entity;
+package com.tactbug.ddd.common.base;
 
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;

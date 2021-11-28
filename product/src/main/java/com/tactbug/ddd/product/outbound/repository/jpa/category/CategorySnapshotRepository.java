@@ -3,7 +3,7 @@ package com.tactbug.ddd.product.outbound.repository.jpa.category;
 import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.tactbug.ddd.common.entity.BaseDomain;
+import com.tactbug.ddd.common.base.BaseDomain;
 import com.tactbug.ddd.common.utils.SerializeUtil;
 import com.tactbug.ddd.common.exceptions.TactException;
 import com.tactbug.ddd.product.domain.category.Category;

@@ -1,6 +1,6 @@
 package com.tactbug.ddd.product.domain.category;
 
-import com.tactbug.ddd.common.entity.BaseSituation;
+import com.tactbug.ddd.common.base.BaseSituation;
 import lombok.Getter;
 import lombok.Setter;
 

@@ -1,7 +1,7 @@
 package com.tactbug.ddd.product.query.vo;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.tactbug.ddd.common.entity.BaseDomain;
+import com.tactbug.ddd.common.base.BaseDomain;
 import com.tactbug.ddd.common.utils.SerializeUtil;
 import com.tactbug.ddd.common.exceptions.TactException;
 import com.tactbug.ddd.product.domain.category.Category;
@@ -15,7 +15,6 @@ import lombok.ToString;
 import org.springframework.beans.BeanUtils;
 
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import java.util.HashMap;

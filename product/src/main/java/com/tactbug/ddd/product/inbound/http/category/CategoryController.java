@@ -1,6 +1,6 @@
 package com.tactbug.ddd.product.inbound.http.category;
 
-import com.tactbug.ddd.common.entity.Result;
+import com.tactbug.ddd.common.base.Result;
 import com.tactbug.ddd.product.domain.category.Category;
 import com.tactbug.ddd.product.domain.category.command.CategoryCommand;
 import com.tactbug.ddd.product.inbound.http.category.response.CategoryResponse;

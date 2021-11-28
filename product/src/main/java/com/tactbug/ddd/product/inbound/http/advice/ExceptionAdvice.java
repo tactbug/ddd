@@ -1,6 +1,6 @@
 package com.tactbug.ddd.product.inbound.http.advice;
 
-import com.tactbug.ddd.common.entity.Result;
+import com.tactbug.ddd.common.base.Result;
 import com.tactbug.ddd.common.exceptions.TactException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.ControllerAdvice;

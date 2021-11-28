@@ -1,6 +1,6 @@
 package com.tactbug.ddd.product.query.controller;
 
-import com.tactbug.ddd.common.entity.Result;
+import com.tactbug.ddd.common.base.Result;
 import com.tactbug.ddd.product.query.ProductQuery;
 import com.tactbug.ddd.product.query.vo.CategoryVo;
 import org.springframework.web.bind.annotation.GetMapping;

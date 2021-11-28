@@ -1,6 +1,6 @@
 package com.tactbug.ddd.product.domain.category.command;
 
-import com.tactbug.ddd.common.entity.BaseCommand;
+import com.tactbug.ddd.common.base.BaseCommand;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 

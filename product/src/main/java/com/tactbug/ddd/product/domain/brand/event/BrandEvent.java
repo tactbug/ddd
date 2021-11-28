@@ -1,6 +1,6 @@
 package com.tactbug.ddd.product.domain.brand.event;
 
-import com.tactbug.ddd.common.entity.Event;
+import com.tactbug.ddd.common.base.Event;
 import com.tactbug.ddd.product.domain.brand.Brand;
 
 import javax.persistence.*;

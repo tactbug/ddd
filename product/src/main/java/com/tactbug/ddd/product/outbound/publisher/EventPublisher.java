@@ -1,7 +1,7 @@
 package com.tactbug.ddd.product.outbound.publisher;
 
-import com.tactbug.ddd.common.entity.BaseDomain;
-import com.tactbug.ddd.common.entity.Event;
+import com.tactbug.ddd.common.base.BaseDomain;
+import com.tactbug.ddd.common.base.Event;
 import com.tactbug.ddd.common.exceptions.TactException;
 import com.tactbug.ddd.product.TactProductApplication;
 import com.tactbug.ddd.product.domain.brand.event.BrandEvent;

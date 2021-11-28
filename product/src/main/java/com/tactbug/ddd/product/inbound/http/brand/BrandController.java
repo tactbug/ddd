@@ -1,6 +1,6 @@
 package com.tactbug.ddd.product.inbound.http.brand;
 
-import com.tactbug.ddd.common.entity.Result;
+import com.tactbug.ddd.common.base.Result;
 import com.tactbug.ddd.product.domain.brand.Brand;
 import com.tactbug.ddd.product.domain.brand.command.BrandCommand;
 import com.tactbug.ddd.product.inbound.http.brand.vo.BrandVo;

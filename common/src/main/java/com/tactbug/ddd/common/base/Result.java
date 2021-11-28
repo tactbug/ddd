@@ -1,4 +1,4 @@
-package com.tactbug.ddd.common.entity;
+package com.tactbug.ddd.common.base;
 
 import java.util.Objects;
 

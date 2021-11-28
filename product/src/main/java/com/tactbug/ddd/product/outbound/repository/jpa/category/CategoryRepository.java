@@ -1,6 +1,6 @@
 package com.tactbug.ddd.product.outbound.repository.jpa.category;
 
-import com.tactbug.ddd.common.entity.Event;
+import com.tactbug.ddd.common.base.Event;
 import com.tactbug.ddd.common.exceptions.TactException;
 import com.tactbug.ddd.product.domain.category.Category;
 import com.tactbug.ddd.product.domain.category.CategoryEvent;

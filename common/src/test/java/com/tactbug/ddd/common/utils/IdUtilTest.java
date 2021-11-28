@@ -1,6 +1,6 @@
 package com.tactbug.ddd.common.utils;
 
-import com.tactbug.ddd.common.entity.BaseDomain;
+import com.tactbug.ddd.common.base.BaseDomain;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
