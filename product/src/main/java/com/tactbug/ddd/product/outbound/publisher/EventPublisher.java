@@ -14,10 +14,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -32,6 +29,23 @@ public class EventPublisher {
     private BrandEventRepository brandEventRepository;
 
     public void publish(Collection<? extends Event<? extends BaseDomain>> events, EventTopics topic){
+
+        // 暂时使用自旋方式判断事务是否提交, 其实最好的方法是使用异步响应式方法获取事务提交结果
+        int retry = 10;
+        boolean committed = false;
+        while (retry > 0){
+            committed = committed(events);
+            if (committed){
+                break;
+            }else {
+                retry --;
+            }
+        }
+
+
+        if (!committed){
+            log.error("事件[" + events + "]事务提交异常!");
+        }
         Map<Long, List<Event<? extends BaseDomain>>> eventMap = events.stream().collect(Collectors.groupingBy(Event::getDomainId));
         eventMap.forEach((domainId, eventGroup) -> {
             eventGroup
@@ -46,9 +60,37 @@ public class EventPublisher {
                                             log.error("事件发布" + e + "失败", ex);
                                             throw TactException.eventOperateError("事件发布" + e + "失败", ex);
                                         }
-                                        );
+                                );
                     });
         });
+    }
+
+    private boolean committed(Collection<? extends Event<? extends BaseDomain>> events){
+        List<BrandEvent> brandEvents = events.stream()
+                .filter(e -> e instanceof BrandEvent)
+                .map(e -> (BrandEvent) e)
+                .collect(Collectors.toList());
+        List<CategoryEvent> categoryEvents = events.stream()
+                .filter(e -> e instanceof CategoryEvent)
+                .map(e -> (CategoryEvent) e)
+                .collect(Collectors.toList());
+        return categoryCommitted(categoryEvents) && brandCommitted(brandEvents);
+    }
+
+    private boolean categoryCommitted(List<CategoryEvent> categoryEvents){
+        if (categoryEvents.isEmpty()){
+            return true;
+        }
+        Set<Long> ids = categoryEvents.stream().map(CategoryEvent::getId).collect(Collectors.toSet());
+        return categoryEventRepository.existsAllByIdIn(ids);
+    }
+
+    private boolean brandCommitted(List<BrandEvent> brandEvents){
+        if (brandEvents.isEmpty()){
+            return true;
+        }
+        Set<Long> ids = brandEvents.stream().map(BrandEvent::getId).collect(Collectors.toSet());
+        return brandEventRepository.existsAllByIdIn(ids);
     }
 
     private byte[] serializeToAvro(Event<? extends BaseDomain> event){
@@ -74,18 +116,10 @@ public class EventPublisher {
     }
 
     private void categoryEventPublish(CategoryEvent categoryEvent){
-        int retry = 10;
-        while (retry > 0){
-            Optional<CategoryEvent> optional = categoryEventRepository.findById(categoryEvent.getId());
-            if (optional.isPresent()){
-                CategoryEvent currentEvent = optional.get();
-                currentEvent.publish();
-                categoryEventRepository.save(currentEvent);
-                return;
-            }
-            retry --;
-        }
-        log.error("事件[" + categoryEvent + "]提交异常, 请检查");
+        CategoryEvent currentEvent = categoryEventRepository.findById(categoryEvent.getId())
+                .orElseThrow(() -> TactException.eventOperateError("分类事件[" + categoryEvent + "]不存在", null));
+        currentEvent.publish();
+        categoryEventRepository.save(currentEvent);
     }
 
     private void brandEventPublish(BrandEvent brandEvent){

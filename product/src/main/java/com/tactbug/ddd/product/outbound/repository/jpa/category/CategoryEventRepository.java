@@ -4,6 +4,7 @@ import com.tactbug.ddd.product.domain.category.CategoryEvent;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,4 +16,5 @@ import java.util.Optional;
 @Repository
 public interface CategoryEventRepository extends JpaRepository<CategoryEvent, Long> {
     List<CategoryEvent> findAllByDomainIdAndDomainVersionGreaterThanOrderByDomainVersionAsc(Long domainId, Integer domainVersion);
+    boolean existsAllByIdIn(Collection<Long> id);
 }

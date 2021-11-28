@@ -19,7 +19,7 @@
 - common
   - 基础组件模块, 包括一些常用的工具类, 一些基础类信息, 以及avro相关
   - 项目的事件传输采用avro编码协议进行, avro schema需要在.schema包里手动build, build完成需要注册到AvroSchemaGenerator里, 手动执行generator创建.avsc文件
-  - 确保.avsc创建完成后手动编译common包, 编译过程重会自动生成相应的Avro类
+  - 确保.avsc创建完成后手动编译common包, 编译过程中会自动生成相应的Avro类
 - product
   - 商品服务相关, 领域驱动, 事件溯源, CQRS...
   - 目前只实现的category聚合的相关功能, 事件发布也仅限于categoryCreated类型
